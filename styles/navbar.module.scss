@@ -1,0 +1,79 @@
+@mixin navbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin upper($width: null) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: $width;
+}
+
+.container {
+  margin-left: 8em;
+  margin-right: 8em;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.upper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1em;
+}
+
+.lower {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-top: 1em;
+}
+
+.textInputClass {
+  display: block;
+}
+
+.lower > * {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+.searchButton {
+  display: none;
+}
+
+.optionsButton {
+  display: none;
+}
+
+@media screen and (max-width: 75em) {
+  .container {
+    margin-left: 3em;
+    margin-right: 3em;
+  }
+}
+
+//convert 660px to em (1em = 16px) 660/16 = 41.25em (rounded to 41.3em)
+
+@media screen and (max-width: 42em) {
+  .button {
+    display: none;
+    background-color: red;
+  }
+  .searchButton {
+    display: block;
+  }
+  .optionsButton {
+    display: block;
+  }
+  .textInputClass {
+    display: none;
+  }
+}
