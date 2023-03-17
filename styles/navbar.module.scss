@@ -51,6 +51,14 @@
 
 .optionsButton {
   display: none;
+  margin-right: 1em;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 @media screen and (max-width: 75em) {

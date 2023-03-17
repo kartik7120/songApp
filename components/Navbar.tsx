@@ -1,4 +1,4 @@
-import { ActionIcon, Avatar, Button, TextInput } from "@mantine/core";
+import { ActionIcon, Avatar, Button, Group, TextInput } from "@mantine/core";
 import { SiIconfinder } from "react-icons/si";
 import { BsSearch } from "react-icons/bs";
 import { AiOutlineBell } from "react-icons/ai";
@@ -10,10 +10,14 @@ export default function Navbar() {
     return (
         <div className={styles.container}>
             <div className={styles.upper}>
-                <ActionIcon className={styles.optionsButton} component="button">
-                    <IoOptionsOutline size={50} />
-                </ActionIcon>
-                <SiIconfinder size={50} />
+                <div className={styles.buttonGroup}>
+                    <ActionIcon className={styles.optionsButton} size={50} component="button">
+                        <IoOptionsOutline size={30} />
+                    </ActionIcon>
+                    <ActionIcon style={{ marginRight: "1em" }}>
+                        <SiIconfinder size={50} />
+                    </ActionIcon>
+                </div>
                 <TextInput
                     placeholder="Search..."
                     icon={<BsSearch />}
