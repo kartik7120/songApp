@@ -8,6 +8,7 @@ import styles from "../styles/navbar.module.scss";
 import { useDisclosure } from "@mantine/hooks";
 import { getHotkeyHandler } from '@mantine/hooks';
 import { useRouter } from 'next/router';
+import Link from "next/link";
 
 export default function Navbar() {
     const [opened, { open, close }] = useDisclosure(false);
@@ -35,9 +36,11 @@ export default function Navbar() {
                         <ActionIcon className={styles.optionsButton} size={50} component="button">
                             <IoOptionsOutline size={30} />
                         </ActionIcon>
-                        <ActionIcon style={{ marginRight: "1em" }}>
-                            <SiIconfinder size={50} />
-                        </ActionIcon>
+                        <Link href={'/'}>
+                            <ActionIcon style={{ marginRight: "1em" }}>
+                                <SiIconfinder size={50} />
+                            </ActionIcon>
+                        </Link>
                     </div>
                     <TextInput
                         placeholder="Search..."
@@ -54,9 +57,11 @@ export default function Navbar() {
                     />
                 </div>
                 <div className={styles.lower}>
-                    <Button className={styles.button} type="button" variant="outline" color="rgb(61,75,223)">
-                        Create Post
-                    </Button>
+                    <Link href={'/new'}>
+                        <Button className={styles.button} type="button" variant="outline" color="rgb(61,75,223)">
+                            Create Post
+                        </Button>
+                    </Link>
                     <ActionIcon onClick={open} className={styles.searchButton}>
                         <BiSearchAlt />
                     </ActionIcon>
