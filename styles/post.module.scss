@@ -1,0 +1,9 @@
+.container {
+  width: 50em;
+  height: 5em;
+}
+
+.inputClass:focus {
+  background-color: cyan;
+  border: 10px solid red;
+}
