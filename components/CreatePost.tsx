@@ -11,6 +11,11 @@ import { Controller } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
+import { SegmentedControl } from '@mantine/core';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from "remark-gfm";
+import remarkHtml from "remark-html";
+import rehypeRaw from "rehype-raw";
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor"),
@@ -47,6 +52,7 @@ export default function CreatePost(props: Props) {
         label: `Tag ${i}`,
     }));
 
+    const [value, setValue] = useState('edit');
     const [opened, { open, close }] = useDisclosure(false);
 
     const theme = useMantineColorScheme();
@@ -78,8 +84,20 @@ export default function CreatePost(props: Props) {
                     <Button variant="filled" color="blue" onClick={close}>No</Button>
                 </Group>
             </Modal>
+            <SegmentedControl value={value} onChange={setValue} size="lg" data={
+                [
+                    {
+                        label: "Edit",
+                        value: "edit"
+                    }, {
+                        label: "Preview",
+                        value: "preview"
+                    }
+                ]
+            }
+            />
             <div className={styles.container}>
-                <form onSubmit={handleSubmit(handleFormSubmit, onError)}>
+                {value === "edit" ? <form onSubmit={handleSubmit(handleFormSubmit, onError)}>
                     <Paper shadow="md" p="md" withBorder>
                         <Controller name="image_file" control={control} render={({ field }) => (
                             <FileInput icon={<BsUpload />} {...field} pb="lg" placeholder="Upload a cover image"
@@ -117,7 +135,13 @@ export default function CreatePost(props: Props) {
                             <Button variant="subtle" onClick={open} radius="md" color="indigo" size="md">Revert New Changes</Button>
                         </Group>
                     </Paper>
-                </form>
+                </form> : <div>
+                    <Paper shadow="md" p="md" withBorder>
+                        <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
+                            {watch("body")}
+                        </ReactMarkdown>
+                    </Paper>
+                </div>}
             </div>
         </>
     );
