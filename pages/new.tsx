@@ -36,7 +36,7 @@ export default function NewPost() {
                     {(styles) => (
                         <div style={styles} className="second_section">
                             <Title order={3}>Tagging Guidelines</Title>
-                            <Text component="p">
+                            <Text>
                                 <Text>Tags help people find your post.</Text>
                                 <br />
                                 <Text> Think of tags as the topics or categories that best describe your post.</Text>
