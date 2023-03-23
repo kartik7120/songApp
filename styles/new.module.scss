@@ -11,3 +11,22 @@
 .container2 {
   margin-right: 2em;
 }
+
+@media screen and (max-width: 1024px) {
+  .container3 {
+    display: none;
+  }
+  .container {
+    margin-left: 5em;
+    margin-right: 5em;
+  }
+}
+
+@media screen and (max-width: 786px) {
+  .container {
+    margin-left: 2em;
+    margin-right: 2em;
+    width: 100%;
+    display: block;
+  }
+}
