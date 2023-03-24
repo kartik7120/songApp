@@ -16,6 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from "remark-gfm";
 import remarkHtml from "remark-html";
 import rehypeRaw from "rehype-raw";
+import EditorFunction from "../components/Editor";
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor"),
@@ -122,13 +123,11 @@ export default function CreatePost(props: Props) {
                                     duration: 150, transition: "pop-top-left"
                                 }} />
                         )} />
-                        <Controller name="body" control={control} render={({ field }) => (
-                            <MDEditor {...field} previewOptions={{ rehypePlugins: [[rehypeSanitize]] }} onFocus={() => {
-                                props.setTagsFocused(false);
-                                props.setInputFocused(false);
-                                props.setEditorFocused(true);
-                            }} />
-                        )} />
+                        <EditorFunction onFocus={() => {
+                            props.setTagsFocused(false);
+                            props.setInputFocused(false);
+                            props.setEditorFocused(true);
+                        }} />
                         <Group spacing="md" align="center" mt="lg">
                             <Button variant="filled" type="submit" radius="md" color="violet" size="md">Publish</Button>
                             <Button variant="subtle" radius="md" size="md">Save Draft</Button>
