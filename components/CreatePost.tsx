@@ -1,4 +1,4 @@
-import { Button, FileInput, Group, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
+import { ActionIcon, Button, FileInput, Group, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
 import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
@@ -9,7 +9,7 @@ import { useState } from "react";
 import styles from "../styles/post.module.scss";
 import { Controller } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
-import { BsUpload } from "react-icons/bs";
+import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
 import { SegmentedControl } from '@mantine/core';
 import ReactMarkdown from 'react-markdown';
@@ -17,6 +17,16 @@ import remarkGfm from "remark-gfm";
 import remarkHtml from "remark-html";
 import rehypeRaw from "rehype-raw";
 import EditorFunction from "../components/Editor";
+import { useEditor } from "@tiptap/react";
+import Highlight from '@tiptap/extension-highlight';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Superscript from '@tiptap/extension-superscript';
+import SubScript from '@tiptap/extension-subscript';
+import Image from '@tiptap/extension-image';
+import { RichTextEditor, Link } from '@mantine/tiptap';
+import PreviewMarkdown from "./PreviewMarkdown";
 
 const MDEditor = dynamic(
     () => import("@uiw/react-md-editor"),
@@ -46,6 +56,26 @@ export default function CreatePost(props: Props) {
             tags: [],
             title: "",
         }
+    });
+
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Highlight,
+            Underline,
+            TextAlign,
+            Superscript,
+            SubScript,
+            Link,
+            Image
+        ],
+        content: '<p>Hello <strong>World</strong>!</p>',
+        autofocus: 'end',
+        onFocus: () => {
+            props.setEditorFocused(true);
+            props.setInputFocused(false);
+            props.setTagsFocused(false);
+        },
     });
 
     const tags = Array.from({ length: 10 }, (_, i) => ({
@@ -123,11 +153,56 @@ export default function CreatePost(props: Props) {
                                     duration: 150, transition: "pop-top-left"
                                 }} />
                         )} />
-                        <EditorFunction onFocus={() => {
-                            props.setTagsFocused(false);
-                            props.setInputFocused(false);
-                            props.setEditorFocused(true);
-                        }} />
+                        <RichTextEditor editor={editor} >
+                            <RichTextEditor.Toolbar sticky stickyOffset={60}>
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.Bold />
+                                    <RichTextEditor.Italic />
+                                    <RichTextEditor.Underline />
+                                    <RichTextEditor.Strikethrough />
+                                    <RichTextEditor.ClearFormatting />
+                                    <RichTextEditor.Highlight />
+                                    <RichTextEditor.Code />
+                                </RichTextEditor.ControlsGroup>
+
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.H1 />
+                                    <RichTextEditor.H2 />
+                                    <RichTextEditor.H3 />
+                                    <RichTextEditor.H4 />
+                                </RichTextEditor.ControlsGroup>
+
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.Blockquote />
+                                    <RichTextEditor.Hr />
+                                    <RichTextEditor.BulletList />
+                                    <RichTextEditor.OrderedList />
+                                    <RichTextEditor.Subscript />
+                                    <RichTextEditor.Superscript />
+                                </RichTextEditor.ControlsGroup>
+
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.Link />
+                                    <RichTextEditor.Unlink />
+                                </RichTextEditor.ControlsGroup>
+
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.AlignLeft />
+                                    <RichTextEditor.AlignCenter />
+                                    <RichTextEditor.AlignJustify />
+                                    <RichTextEditor.AlignRight />
+                                </RichTextEditor.ControlsGroup>
+
+                                <RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.Control title='Insert Image' onClick={() => console.log('Used to add image')}>
+                                        <ActionIcon>
+                                            <BsCardImage />
+                                        </ActionIcon>
+                                    </RichTextEditor.Control>
+                                </RichTextEditor.ControlsGroup>
+                            </RichTextEditor.Toolbar>
+                            <RichTextEditor.Content />
+                        </RichTextEditor>
                         <Group spacing="md" align="center" mt="lg">
                             <Button variant="filled" type="submit" radius="md" color="violet" size="md">Publish</Button>
                             <Button variant="subtle" radius="md" size="md">Save Draft</Button>
@@ -136,9 +211,8 @@ export default function CreatePost(props: Props) {
                     </Paper>
                 </form> : <div>
                     <Paper shadow="md" p="md" withBorder>
-                        <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
-                            {watch("body")}
-                        </ReactMarkdown>
+                        <PreviewMarkdown title={watch("title")} tags={watch("tags")}
+                            body={editor && editor.getHTML()} />
                     </Paper>
                 </div>}
             </div>
