@@ -7,15 +7,15 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import Image from '@tiptap/extension-image';
-import { useEffect } from 'react';
+import { FocusEventHandler, useEffect } from 'react';
 import { ActionIcon } from '@mantine/core';
 import { BsCardImage } from 'react-icons/bs';
 
 interface Props {
-    props: any
+    onFocus?: FocusEventHandler<HTMLDivElement> | undefined,
 }
 
-export default function EditorFunction() {
+export default function EditorFunction(props: Props) {
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -29,6 +29,9 @@ export default function EditorFunction() {
         ],
         content: '<p>Hello <strong>World</strong>!</p>',
         autofocus: 'end',
+        onFocus: () => {
+            props.onFocus && props.onFocus({} as any);
+        }
     });
 
     return (<>
