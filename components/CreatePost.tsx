@@ -16,7 +16,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from "remark-gfm";
 import remarkHtml from "remark-html";
 import rehypeRaw from "rehype-raw";
-import EditorFunction from "../components/Editor";
 import { useEditor } from "@tiptap/react";
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
@@ -27,11 +26,6 @@ import SubScript from '@tiptap/extension-subscript';
 import Image from '@tiptap/extension-image';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import PreviewMarkdown from "./PreviewMarkdown";
-
-const MDEditor = dynamic(
-    () => import("@uiw/react-md-editor"),
-    { ssr: false }
-);
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
