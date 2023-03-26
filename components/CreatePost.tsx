@@ -1,16 +1,17 @@
-import { ActionIcon, Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
+import { Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
 import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { useMantineColorScheme } from "@mantine/core";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import styles from "../styles/post.module.scss";
 import { Controller } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
 import { SegmentedControl } from '@mantine/core';
-import { Editor, useEditor } from "@tiptap/react";
+import { useLocalStorage } from "@mantine/hooks";
+import { useEditor } from "@tiptap/react";
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -44,16 +45,15 @@ Image.configure({
 
 export default function CreatePost(props: Props) {
 
-    const { control, formState: { errors }, watch, handleSubmit, reset } = useForm<FormValues>({
+    const { control, formState: { errors, isDirty }, watch, handleSubmit, reset, setValue: setFormValue } = useForm<FormValues>({
         defaultValues: {
             body: "",
             image_file: null,
             tags: [],
             title: "",
             imageUpload: null
-        }
+        },
     });
-
 
     const editor = useEditor({
         extensions: [
@@ -66,13 +66,18 @@ export default function CreatePost(props: Props) {
             Link,
             Image
         ],
-        content: '<p>Hello <strong>World</strong>!</p>',
+        content: '',
         autofocus: 'end',
         onFocus: () => {
             props.setEditorFocused(true);
             props.setInputFocused(false);
             props.setTagsFocused(false);
         },
+        onUpdate: ({ editor }) => {
+            setFormValue("body", editor.getHTML(), {
+                shouldDirty: true
+            });
+        }
     });
 
     const tags = Array.from({ length: 10 }, (_, i) => ({
@@ -132,7 +137,9 @@ export default function CreatePost(props: Props) {
                             <FileInput icon={<BsUpload />} {...field} pb="lg" placeholder="Upload a cover image"
                                 style={{ width: "15em" }} accept="image/jpeg,image/png,image/svg+xml,image/webp" size="md" />
                         )} />
-                        <Controller name="title" control={control} render={({ field }) => (
+                        <Controller name="title" rules={{
+                            required: true
+                        }} control={control} render={({ field }) => (
                             <TextInput {...field} onFocus={() => {
                                 props.setEditorFocused(false);
                                 props.setTagsFocused(false);
@@ -151,7 +158,7 @@ export default function CreatePost(props: Props) {
                                     duration: 150, transition: "pop-top-left"
                                 }} />
                         )} />
-                        <RichTextEditor editor={editor} >
+                        <RichTextEditor editor={editor}>
                             <RichTextEditor.Toolbar sticky stickyOffset={60}>
                                 <RichTextEditor.ControlsGroup>
                                     <RichTextEditor.Bold />
@@ -204,7 +211,7 @@ export default function CreatePost(props: Props) {
                         <Group spacing="md" align="center" mt="lg">
                             <Button variant="filled" type="submit" radius="md" color="violet" size="md">Publish</Button>
                             <Button variant="subtle" radius="md" size="md">Save Draft</Button>
-                            <Button variant="subtle" onClick={open} radius="md" color="indigo" size="md">Revert New Changes</Button>
+                            {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo" size="md">Revert New Changes</Button>}
                         </Group>
                     </Paper>
                 </form> : <div>
