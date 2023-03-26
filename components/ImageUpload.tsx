@@ -2,19 +2,52 @@ import styles from "../styles/ImageUpload.module.scss";
 import { ActionIcon, FileInput } from '@mantine/core';
 import { BsCardImage } from "react-icons/bs";
 import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import { storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { addImage } from "@/utils/util";
+import { Editor } from "@tiptap/react";
 
-export default function ImageUpload() {
+interface Form {
+    image: FileList | null;
+}
+
+interface Props {
+    field: any,
+    editor: Editor | null;
+}
+
+export default function ImageUpload(props: Props) {
 
     const hiddenFileInput = useRef<HTMLInputElement>(null);
+    const { register, handleSubmit, watch } = useForm<Form>({
+        defaultValues: {
+            image: null
+        },
+    });
 
     function handleClick() {
-
         if (hiddenFileInput.current)
             hiddenFileInput.current.click();
     }
 
-    function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
         console.log(e.target.files);
+        if (e.target.files) {
+            let imageRef = ref(storage, "images/" + e.target.files[0].name);
+            try {
+                await uploadBytes(imageRef, e.target.files[0]).then((snapshot) => {
+                    console.log(`full path = ${snapshot.ref.fullPath}`);
+                    getDownloadURL(snapshot.ref).then((url) => {
+                        console.log(`download url = ${url}`);
+                        addImage(props.editor, url);
+                    });
+                    console.log('Uploaded a blob or file!');
+                });
+            } catch (error) {
+                console.log(`error occured while uploading a file = ${error}`);
+            }
+        }
     }
 
     return <>

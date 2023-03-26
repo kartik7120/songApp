@@ -1,22 +1,16 @@
-import { ActionIcon, Button, FileInput, Group, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
+import { ActionIcon, Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
 import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-import dynamic from "next/dynamic";
-import rehypeSanitize from "rehype-sanitize";
 import { useMantineColorScheme } from "@mantine/core";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import styles from "../styles/post.module.scss";
 import { Controller } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
 import { SegmentedControl } from '@mantine/core';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from "remark-gfm";
-import remarkHtml from "remark-html";
-import rehypeRaw from "rehype-raw";
-import { useEditor } from "@tiptap/react";
+import { Editor, useEditor } from "@tiptap/react";
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -26,6 +20,7 @@ import SubScript from '@tiptap/extension-subscript';
 import Image from '@tiptap/extension-image';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import PreviewMarkdown from "./PreviewMarkdown";
+import ImageUpload from "./ImageUpload";
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
@@ -39,7 +34,13 @@ interface FormValues {
     title: string;
     tags: string[];
     body: string;
+    imageUpload: FileList | null;
 }
+
+Image.configure({
+    allowBase64: true,
+});
+
 
 export default function CreatePost(props: Props) {
 
@@ -49,8 +50,10 @@ export default function CreatePost(props: Props) {
             image_file: null,
             tags: [],
             title: "",
+            imageUpload: null
         }
     });
+
 
     const editor = useEditor({
         extensions: [
@@ -98,7 +101,8 @@ export default function CreatePost(props: Props) {
 
     return (
         <>
-            <Modal opened={opened} centered onClose={close} title="Are you sure you want to revert to the previous save ?" withCloseButton>
+            <Modal opened={opened} centered onClose={close}
+                title="Are you sure you want to revert to the previous save ?" withCloseButton>
                 <Group spacing="md" align="center" mt="lg">
                     <Button variant="filled" color="red" onClick={() => {
                         handleReset();
@@ -188,10 +192,10 @@ export default function CreatePost(props: Props) {
                                 </RichTextEditor.ControlsGroup>
 
                                 <RichTextEditor.ControlsGroup>
-                                    <RichTextEditor.Control title='Insert Image' onClick={() => console.log('Used to add image')}>
-                                        <ActionIcon>
-                                            <BsCardImage />
-                                        </ActionIcon>
+                                    <RichTextEditor.Control title='Insert Image' onClick={() => console.log('image uploaded')}>
+                                        <Controller name="imageUpload" control={control} render={({ field }) => (
+                                            <ImageUpload field={field} editor={editor} />
+                                        )} />
                                     </RichTextEditor.Control>
                                 </RichTextEditor.ControlsGroup>
                             </RichTextEditor.Toolbar>
