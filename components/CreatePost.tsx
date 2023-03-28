@@ -70,7 +70,7 @@ export default function CreatePost(props: Props) {
             Link,
             Image
         ],
-        content: '',
+        content: localStorage.getItem(router.route) ? JSON.parse(localStorage.getItem(router.route) as string).body : '',
         autofocus: 'end',
         onFocus: () => {
             props.setEditorFocused(true);
@@ -87,9 +87,10 @@ export default function CreatePost(props: Props) {
             setFormValue("tags", data.tags);
             setFormValue("title", data.title);
             setFormValue("imageUpload", data.imageUpload);
-            console.log('data set from localStorage');
         }
-        return () => localStorage.setItem(router.route, convertToString({ ...getValues() }));
+        return () => {
+            localStorage.setItem(router.route, convertToString({ ...getValues(), body: editor && editor.getHTML() }));
+        };
     }, [router.route, setFormValue, getValues, editor]);
 
 
