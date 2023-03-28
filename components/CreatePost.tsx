@@ -1,16 +1,15 @@
-import { Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
+import { Alert, Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
 import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { useMantineColorScheme } from "@mantine/core";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "../styles/post.module.scss";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
 import { SegmentedControl } from '@mantine/core';
-import { useLocalStorage } from "@mantine/hooks";
 import { useEditor } from "@tiptap/react";
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
@@ -22,6 +21,9 @@ import Image from '@tiptap/extension-image';
 import { RichTextEditor, Link } from '@mantine/tiptap';
 import PreviewMarkdown from "./PreviewMarkdown";
 import ImageUpload from "./ImageUpload";
+import { CgDanger } from "react-icons/cg";
+import { useRouter } from "next/router";
+import { convertToString } from "@/utils/util";
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
@@ -45,15 +47,17 @@ Image.configure({
 
 export default function CreatePost(props: Props) {
 
-    const { control, formState: { errors, isDirty }, watch, handleSubmit, reset, setValue: setFormValue } = useForm<FormValues>({
-        defaultValues: {
-            body: "",
-            image_file: null,
-            tags: [],
-            title: "",
-            imageUpload: null
-        },
-    });
+    const router = useRouter();
+    const { control, formState: { errors, isDirty }, watch, handleSubmit, reset,
+        setValue: setFormValue, clearErrors, getValues } = useForm<FormValues>({
+            defaultValues: {
+                body: "",
+                image_file: null,
+                tags: [],
+                title: "",
+                imageUpload: null
+            },
+        });
 
     const editor = useEditor({
         extensions: [
@@ -73,12 +77,21 @@ export default function CreatePost(props: Props) {
             props.setInputFocused(false);
             props.setTagsFocused(false);
         },
-        onUpdate: ({ editor }) => {
-            setFormValue("body", editor.getHTML(), {
-                shouldDirty: true
-            });
-        }
     });
+
+    useEffect(() => {
+        if (localStorage.getItem(router.route)) {
+            const data = JSON.parse(localStorage.getItem(router.route) as string);
+            setFormValue("body", data.body);
+            setFormValue("image_file", data.image_file);
+            setFormValue("tags", data.tags);
+            setFormValue("title", data.title);
+            setFormValue("imageUpload", data.imageUpload);
+            console.log('data set from localStorage');
+        }
+        return () => localStorage.setItem(router.route, convertToString({ ...getValues() }));
+    }, [router.route, setFormValue, getValues, editor]);
+
 
     const tags = Array.from({ length: 10 }, (_, i) => ({
         value: `tag-${i}`,
@@ -91,17 +104,18 @@ export default function CreatePost(props: Props) {
     const theme = useMantineColorScheme();
 
     function handleReset() {
+        localStorage.removeItem(router.route);
         reset();
     }
 
     const handleFormSubmit: SubmitHandler<FormValues> = (data) => {
+        clearErrors();
         console.log(`data = ${JSON.stringify(data)}`);
         console.log(`image_file = ${JSON.stringify(data.image_file)}`);
     }
 
     const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
         console.log(`errors = ${JSON.stringify(errors)}`);
-        console.log(`e = ${JSON.stringify(e)}`);
     }
 
     return (
@@ -118,7 +132,7 @@ export default function CreatePost(props: Props) {
                     <Button variant="filled" color="blue" onClick={close}>No</Button>
                 </Group>
             </Modal>
-            <SegmentedControl value={value} onChange={setValue} size="lg" data={
+            <SegmentedControl value={value} style={{ marginBottom: "2em" }} onChange={setValue} size="lg" data={
                 [
                     {
                         label: "Edit",
@@ -140,7 +154,7 @@ export default function CreatePost(props: Props) {
                         <Controller name="title" rules={{
                             required: true
                         }} control={control} render={({ field }) => (
-                            <TextInput {...field} onFocus={() => {
+                            <TextInput {...field} error={errors.title && "Please enter Title for the post"} onFocus={() => {
                                 props.setEditorFocused(false);
                                 props.setTagsFocused(false);
                                 props.setInputFocused(true);
@@ -211,7 +225,8 @@ export default function CreatePost(props: Props) {
                         <Group spacing="md" align="center" mt="lg">
                             <Button variant="filled" type="submit" radius="md" color="violet" size="md">Publish</Button>
                             <Button variant="subtle" radius="md" size="md">Save Draft</Button>
-                            {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo" size="md">Revert New Changes</Button>}
+                            {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo"
+                                size="md">Revert New Changes</Button>}
                         </Group>
                     </Paper>
                 </form> : <div>
@@ -220,6 +235,12 @@ export default function CreatePost(props: Props) {
                             body={editor && editor.getHTML()} />
                     </Paper>
                 </div>}
+                {Object.keys(errors).length > 0 &&
+                    <Alert icon={<CgDanger />} color="red"
+                        style={{ marginBottom: "2em", marginTop: "2em", display: "block" }} title="Bummer">
+                        <p>There are some errors in your form. Please fix them before submitting.</p>
+                    </Alert>
+                }
             </div>
         </>
     );
