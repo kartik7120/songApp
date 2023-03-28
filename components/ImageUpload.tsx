@@ -1,7 +1,7 @@
 import styles from "../styles/ImageUpload.module.scss";
 import { ActionIcon, FileInput } from '@mantine/core';
 import { BsCardImage } from "react-icons/bs";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -34,8 +34,8 @@ export default function ImageUpload(props: Props) {
     async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
         console.log(e.target.files);
         if (e.target.files) {
-            let imageRef = ref(storage, "images/" + e.target.files[0].name);
             try {
+                let imageRef = ref(storage, "images/" + e.target.files[0].name);
                 await uploadBytes(imageRef, e.target.files[0]).then((snapshot) => {
                     console.log(`full path = ${snapshot.ref.fullPath}`);
                     getDownloadURL(snapshot.ref).then((url) => {
