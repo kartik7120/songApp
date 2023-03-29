@@ -1,0 +1,30 @@
+.container {
+  display: grid;
+  grid-template-columns: 3fr;
+  grid-template-rows: minmax(0, 2fr) auto;
+  row-gap: 2rem;
+  column-gap: 2rem;
+}
+
+.iconClass {
+  padding-bottom: 2px;
+}
+
+.btnContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: max-content;
+
+  &:hover {
+    .heartClass {
+      color: red;
+    }
+    .commentClass {
+      color: orange;
+    }
+    .bookmarkClass {
+      color: rgb(113, 107, 232);
+    }
+  }
+}
