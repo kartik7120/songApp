@@ -1,0 +1,26 @@
+.userInfo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.userInfo2 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 1em;
+}
+
+.badgeContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 13px;
+}
+
+.container {
+  padding-left: 3em;
+  padding-right: 3em;
+  padding-top: 2em;
+}
