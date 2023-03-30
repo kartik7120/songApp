@@ -1,7 +1,3 @@
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkHtml from "remark-html";
-import rehypeRaw from "rehype-raw";
 import { Badge, Text, Title } from "@mantine/core";
 import parse from 'html-react-parser';
 
