@@ -13,11 +13,11 @@ export default function SidePostMenu() {
                 <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
                 <Text component="span" >0</Text>
             </ActionIcon>
-            <ActionIcon size="xl" className={styles.btnContainer}>
+            <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
                 <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
                 <Text component="span" >0</Text>
             </ActionIcon>
-            <ActionIcon size="xl" className={styles.btnContainer}>
+            <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
                 <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
                 <Text component="span" >0</Text>
             </ActionIcon>
