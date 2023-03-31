@@ -4,9 +4,15 @@ import { FaRegCommentAlt } from "react-icons/fa";
 import { BsBookmark } from "react-icons/bs";
 import { VscCopy } from "react-icons/vsc";
 import { SlOptions } from "react-icons/sl";
+import { useClipboard } from '@mantine/hooks';
+import {useRouter} from 'next/router';
 import styles from "../styles/sidepostmenu.module.scss";
 
 export default function SidePostMenu() {
+
+    const clipboard = useClipboard({ timeout: 500 });
+    const router = useRouter();
+
     return (
         <div className={styles.wrapper}>
             <aside className={styles.container}>
@@ -30,7 +36,9 @@ export default function SidePostMenu() {
                     </Menu.Target>
                     <Menu.Dropdown>
                         <Menu.Item>
-                            <Group position="apart">
+                            <Group position="apart" onClick={() => {
+                                clipboard.copy(`${router.basePath}${router.asPath}`);
+                            }}>
                                 <Text>Copy link</Text>
                                 <VscCopy />
                             </Group>
