@@ -3,7 +3,7 @@ import styles from "../styles/userinfo.module.scss";
 
 export default function UserInfo() {
     return (
-        <Paper withBorder radius="md" p="md">
+        <Paper withBorder radius="md" p="md" style={{ gridColumn: "3/-1", maxHeight: "min-content" }}>
             <div className={styles.container}>
                 <div className={styles.avatarDiv}>
                     <Avatar style={{ marginRight: "1em" }} radius="xl" src={null} size="lg" />
