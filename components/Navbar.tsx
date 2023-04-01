@@ -58,8 +58,13 @@ export default function Navbar() {
                 </div>
                 <div className={styles.lower}>
                     <Link href={'/new'}>
-                        <Button className={styles.button} type="button" variant="outline" color="rgb(61,75,223)">
+                        <Button className={styles.button} type="button" variant="outline" color="violet">
                             Create Post
+                        </Button>
+                    </Link>
+                    <Link href={'/entry'}>
+                        <Button className={styles.button} type="button" variant="outline" color="violet">
+                            Create Account
                         </Button>
                     </Link>
                     <ActionIcon onClick={open} className={styles.searchButton}>
