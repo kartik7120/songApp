@@ -1,4 +1,4 @@
-import { ActionIcon, Avatar, Button, Drawer, Group, TextInput } from "@mantine/core";
+import { ActionIcon, Avatar, Button, Drawer, Group, Menu, TextInput } from "@mantine/core";
 import { SiIconfinder } from "react-icons/si";
 import { BsSearch } from "react-icons/bs";
 import { AiOutlineBell } from "react-icons/ai";
@@ -9,10 +9,26 @@ import { useDisclosure } from "@mantine/hooks";
 import { getHotkeyHandler } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { auth } from "../firebase";
+import { User, signOut } from "firebase/auth";
 
 export default function Navbar() {
     const [opened, { open, close }] = useDisclosure(false);
     const router = useRouter();
+
+    const [user, setUser] = useState<User | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                setUser(user);
+            } else {
+                setUser(null);
+            }
+        })
+        return unsubscribe;
+    }, [])
 
     return (
         <>
@@ -57,25 +73,44 @@ export default function Navbar() {
                     />
                 </div>
                 <div className={styles.lower}>
-                    <Link href={'/new'}>
+                    {user ? <Link href={'/new'}>
                         <Button className={styles.button} type="button" variant="outline" color="violet">
                             Create Post
                         </Button>
-                    </Link>
-                    <Link href={'/entry'}>
-                        <Button className={styles.button} type="button" variant="outline" color="violet">
-                            Create Account
-                        </Button>
-                    </Link>
+                    </Link> :
+                        <>
+                            <Link href={'/entry'}>
+                                <Button className={styles.button} type="button" variant="outline" color="violet">
+                                    Create Account
+                                </Button>
+                            </Link>
+                            <Link href={`/entry?login=true`}>
+                                <Button className={styles.button} type="button" variant="subtle" color="violet">
+                                    Log in
+                                </Button>
+                            </Link>
+                        </>
+                    }
                     <ActionIcon onClick={open} className={styles.searchButton}>
                         <BiSearchAlt />
                     </ActionIcon>
                     <ActionIcon >
                         <AiOutlineBell size={30} />
                     </ActionIcon>
-                    <ActionIcon>
-                        <Avatar radius="xl" src="https://avatars.githubusercontent.com/u/25126241?v=4" size="md" />
-                    </ActionIcon>
+                    {user ? <Menu width={200} position="bottom">
+                        <Menu.Target>
+                            <ActionIcon>
+                                <Avatar radius="xl" src={user.photoURL} size="md" />
+                            </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                            <Menu.Item color="red" onClick={() => {
+                                signOut(auth).then(() => console.log('signed out')).catch((error) => {
+                                    console.log('error signing out', error);
+                                })
+                            }}>Sign out</Menu.Item>
+                        </Menu.Dropdown>
+                    </Menu> : ""}
                 </div>
             </div>
         </>
