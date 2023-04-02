@@ -1,4 +1,4 @@
-import { Badge, Button, Paper, Text, Title } from "@mantine/core";
+import { Alert, Badge, Button, Paper, Text, Title } from "@mantine/core";
 import { BsGithub, BsTwitter } from "react-icons/bs";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
@@ -8,15 +8,23 @@ import {
     GithubAuthProvider, signInWithPopup, signOut, signInWithRedirect,
     getRedirectResult, GoogleAuthProvider
 } from "firebase/auth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { FiAlertCircle } from "react-icons/fi";
 
 export default function Entry() {
+
+    const router = useRouter();
+    const [user, setUser] = useState<any | null>(null);
+    const [error, setError] = useState<any | null>(null);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 console.log('user signed in');
+                setUser(user);
             } else {
+                setUser(null);
                 console.log('user not signed in');
             }
         })
@@ -29,8 +37,7 @@ export default function Entry() {
                 const credential = GithubAuthProvider.credentialFromResult(result);
                 const token = credential && credential.accessToken;
                 const user = result.user;
-                console.log('signed in using github');
-                console.log(`user = ${user}`);
+                router.push('/');
             }).catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
@@ -40,6 +47,7 @@ export default function Entry() {
                 console.log(`error message = ${errorMessage}`);
                 console.log(`email = ${email}`);
                 console.log(`credential = ${credential}`);
+                setError(error);
             })
         console.log("Github clicked");
     }
@@ -49,8 +57,7 @@ export default function Entry() {
             const credential = GoogleAuthProvider.credentialFromResult(result);
             const token = credential && credential.accessToken;
             const user = result.user;
-            console.log('signed in using google');
-            console.log(`user = ${user}`);
+            router.push('/');
         }).catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
@@ -59,7 +66,8 @@ export default function Entry() {
             console.log(`error code = ${errorCode}`);
             console.log(`error message = ${errorMessage}`);
             console.log(`email = ${email}`);
-            console.log(`credential = ${credential}`);
+            console.log(`credential = ${JSON.stringify(credential)}`);
+            setError(error);
         })
         console.log("Google clicked");
     }
@@ -72,9 +80,10 @@ export default function Entry() {
                     <Text>DEV Community is a community of 1,037,803 amazing developers</Text>
                 </div>
                 <div className={styles.btnContainer}>
-                    <Button color="gray" size="lg" fullWidth leftIcon={<FcGoogle />} onClick={handleGoogleClick}>Sign up with Google</Button>
+                    <Button color="gray" size="lg" fullWidth leftIcon={<FcGoogle />}
+                        onClick={handleGoogleClick}>{router.query.login ? "Continue" : "Sign up"} with Google</Button>
                     <Button color="dark" size="lg" onClick={handleGithubClick}
-                        fullWidth leftIcon={<BsGithub color="white" />}>Sign up with GitHub</Button>
+                        fullWidth leftIcon={<BsGithub color="white" />}>{router.query.login ? "Continue" : "Sign up"} with GitHub</Button>
                     <Button color="dark" size="lg" fullWidth
                         onClick={() => {
                             signOut(auth).then(() => console.log('signed out')).catch((error) => {
@@ -82,6 +91,12 @@ export default function Entry() {
                             })
                         }}>Sign out</Button>
                 </div>
+                {error
+                    ?
+                    <Alert color="red" icon={<FiAlertCircle />} title="This is a test alert" style={{ marginTop: "1rem" }}>
+                        <Text>{error.errorCode}</Text>
+                    </Alert>
+                    : ""}
             </Paper>
         </div>
     )
