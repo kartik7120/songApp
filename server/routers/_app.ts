@@ -1,6 +1,8 @@
-import { generateRandomString } from "@/utils/util";
 import { z } from "zod";
 import { procedure, router } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 export const appRouter = router({
     hello: procedure.
@@ -8,75 +10,42 @@ export const appRouter = router({
         .query(({ input }) => {
             return `hello ${input}`;
         }),
-    login: procedure.input(z.object({
-        response_type: z.string().startsWith("code"),
-        client_id: z.string(),
-        scope: z.string(),
-        redirect_uri: z.string(),
-    })).query(({ input, ctx }) => {
-
-        const state = generateRandomString(16);
-        ctx.res.redirect("https://accounts.spotify.com/authorize?" + JSON.stringify({
-            ...input,
-            state,
-        }));
-    }),
-    callback: procedure.input(z.object({
-        code: z.string(),
-        state: z.string(),
-    })).query(async ({ input, ctx }) => {
-        const client_id = '4de79c018e8242fbbe08481a01821bda';
-        const client_secret = '4f0ce72cc24c4764a6cc4c5b8adb545d';
-
-        const authOptions = {
-            url: 'https://accounts.spotify.com/api/token',
-            headers: {
-            },
-            form: {
-                grant_type: 'client_credentials'
-            },
-            json: true
-        };
-
-        try {
-            const query = await fetch('https://accounts.spotify.com/api/token', {
-                headers: {
-                    'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')),
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'grant_type=client_credentials',
-                method: 'POST',
-            });
-
-            const result = await query.json();
-            return result;
-
-        } catch (error) {
-            throw error;
-        }
-    }),
-    getMusic: procedure.input(z.object({
+    getBlogPost: procedure.input(z.object({
         id: z.string(),
-        token: z.string(),
-    })).query(async ({ input }) => {
-        try {
-            const query = await fetch(`https://api.spotify.com/v1/tracks/${input.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${input.token}`,
-                    'Content-Type': 'application/json',
+        uid: z.string(),
+    })).output(z.object({
+        title: z.string(),
+        body: z.string(),
+        createdAt: z.string().optional(),
+        blogImage: z.string().optional(),
+        id: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+    }))
+        .query(async ({ input }) => {
+            try {
+                const docRef = doc(db, "users", input.uid, "blogs", input.id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    return docSnap.data() as any;
                 }
-            })
-
-            const result = await query.json();
-            if (result.href) {
-                return result.href;
+                else {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Not Found',
+                    })
+                }
+            } catch (error) {
+                if (error instanceof TRPCError) {
+                    throw error;
+                }
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
             }
-            
-            return null;
-        } catch (error) {
-            throw error;
-        }
-    }),
+        }),
 })
 
 export type AppRouter = typeof appRouter;
+
+// http://localhost:3000/c229WxKFTHOzuzMUN2dhiStf9sz1/owzAdifrvdX5ZTAyDP3y
