@@ -3,7 +3,7 @@ import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { useMantineColorScheme } from "@mantine/core";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "../styles/post.module.scss";
 import { Controller, useWatch } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
@@ -23,7 +23,10 @@ import PreviewMarkdown from "./PreviewMarkdown";
 import ImageUpload from "./ImageUpload";
 import { CgDanger } from "react-icons/cg";
 import { useRouter } from "next/router";
-import { convertToString } from "@/utils/util";
+import { convertToString, uploadBlog } from "@/utils/util";
+import { addDoc, collection } from "firebase/firestore";
+import { auth, db, storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
@@ -48,8 +51,12 @@ Image.configure({
 export default function CreatePost(props: Props) {
 
     const router = useRouter();
-    const { control, formState: { errors, isDirty }, watch, handleSubmit, reset,
-        setValue: setFormValue, clearErrors, getValues } = useForm<FormValues>({
+    const [body, setBody] = useState<string>("");
+    const imageUrlRef = useRef<string>("");
+    const user = auth.currentUser;
+
+    const { control, formState: { errors, isDirty, isSubmitting }, watch, handleSubmit, reset,
+        setValue: setFormValue, clearErrors, getValues, setError } = useForm<FormValues>({
             defaultValues: {
                 body: "",
                 image_file: null,
@@ -70,7 +77,7 @@ export default function CreatePost(props: Props) {
             Link,
             Image
         ],
-        content: localStorage.getItem(router.route) ? JSON.parse(localStorage.getItem(router.route) as string).body : '',
+        content: body ? body : '',
         autofocus: 'end',
         onFocus: () => {
             props.setEditorFocused(true);
@@ -87,6 +94,7 @@ export default function CreatePost(props: Props) {
             setFormValue("tags", data.tags);
             setFormValue("title", data.title);
             setFormValue("imageUpload", data.imageUpload);
+            setBody(data.body);
         }
         return () => {
             localStorage.setItem(router.route, convertToString({ ...getValues(), body: editor && editor.getHTML() }));
@@ -109,10 +117,21 @@ export default function CreatePost(props: Props) {
         reset();
     }
 
-    const handleFormSubmit: SubmitHandler<FormValues> = (data) => {
+    const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
         clearErrors();
-        console.log(`data = ${JSON.stringify(data)}`);
-        console.log(`image_file = ${JSON.stringify(data.image_file)}`);
+        if (user) {
+            try {
+                const docRef = await uploadBlog(user.uid, {
+                    title: data.title,
+                    tags: data.tags,
+                    body: editor && editor.getHTML(),
+                }, data.image_file!) as any;
+                console.log("Document written with ID: ", docRef.id);
+                router.push(`/${user.uid}/${docRef.id}`);
+            } catch (error) {
+                console.error("Error adding document: ", error);
+            }
+        }
     }
 
     const onError: SubmitErrorHandler<FormValues> = (errors, e) => {
@@ -224,8 +243,9 @@ export default function CreatePost(props: Props) {
                             <RichTextEditor.Content />
                         </RichTextEditor>
                         <Group spacing="md" align="center" mt="lg">
-                            <Button variant="filled" type="submit" radius="md" color="violet" size="md">Publish</Button>
-                            <Button variant="subtle" radius="md" size="md">Save Draft</Button>
+                            <Button loading={isSubmitting} variant="filled"
+                                type="submit" radius="md" color="violet" size="md">Publish</Button>
+                            <Button disabled={isSubmitting} variant="subtle" radius="md" size="md">Save Draft</Button>
                             {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo"
                                 size="md">Revert New Changes</Button>}
                         </Group>
