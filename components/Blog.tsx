@@ -15,7 +15,7 @@ export default function Blog(props: Props) {
         <Paper withBorder style={{ maxWidth: 1000 }} radius="md">
             <div>
                 <Image withPlaceholder
-                    src="https://images.unsplash.com/photo-1616161610000-1b1b1b1b1b1b?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60"
+                    src={props.blogImage || null}
                     width={1000} height={420} alt="Mantine" />
             </div>
             <div className={styles.container}>
