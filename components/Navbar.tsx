@@ -104,6 +104,25 @@ export default function Navbar() {
                             </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
+                            <Menu.Item>
+                                {user.displayName}
+                            </Menu.Item>
+                            <Menu.Divider />
+                            <Menu.Item>
+                                Dashboard
+                            </Menu.Item>
+                            <Menu.Item>
+                                Create Post
+                            </Menu.Item>
+                            <Menu.Item>
+                                Reading List
+                            </Menu.Item>
+                            <Link href="/settings" style={{ textDecoration: "none" }}>
+                                <Menu.Item>
+                                    Settings
+                                </Menu.Item>
+                            </Link>
+                            <Menu.Divider />
                             <Menu.Item color="red" onClick={() => {
                                 signOut(auth).then(() => console.log('signed out')).catch((error) => {
                                     console.log('error signing out', error);
