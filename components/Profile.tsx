@@ -36,7 +36,7 @@ export default function Profile() {
         <div >
             <form action="">
                 <div className={styles.container}>
-                    <Paper shadow="md" p="md" withBorder className={styles.paperClass}>
+                    <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>User</Title>
                         <TextInput label="Name" placeholder="Your Name" {...register("name")} />
                         <TextInput label="Email" placeholder="Your Email" {...register("email")} />
@@ -44,18 +44,18 @@ export default function Profile() {
                         <Checkbox label="Display email on profile" />
                         {/* <FileInput label="Profile Image" {...register("profileImage")} /> */}
                     </Paper>
-                    <Paper shadow="md" p="md" withBorder className={styles.paperClass}>
+                    <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Basic</Title>
                         <TextInput maxLength={100} label="Website url" placeholder="Your website url" {...register("websiteUrl")} />
                         <TextInput maxLength={100} label="Location" placeholder="Your location" {...register("location")} />
                         <Textarea label="Bio" placeholder="Your bio" {...register("bio")} />
                     </Paper>
-                    <Paper shadow="md" p="md" withBorder className={styles.paperClass}>
+                    <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Work</Title>
                         <TextInput maxLength={100} label="Work" placeholder="Where did you go to school ?" {...register("work")} />
                         <TextInput maxLength={100} label="Education" placeholder="What do you do ?" {...register("education")} />
                     </Paper>
-                    <Paper shadow="md" p="md" withBorder className={styles.paperClass}>
+                    <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Branding</Title>
                         <Text weight="bold">Branding color</Text>
                         <Text>Used for backgrounds, borders etc.</Text>
