@@ -1,11 +1,11 @@
-import { Alert, Button, FileInput, Group, Input, Modal, MultiSelect, Paper, TextInput } from "@mantine/core";
+import { Alert, Button, FileInput, Group, Input, Modal, MultiSelect, Paper, Text, TextInput } from "@mantine/core";
 import { HiOutlineHashtag } from "react-icons/hi";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { useMantineColorScheme } from "@mantine/core";
 import { useState, useEffect, useRef } from "react";
 import styles from "../styles/post.module.scss";
-import { Controller, useWatch } from "react-hook-form";
+import { Controller, useFormState, useWatch } from "react-hook-form";
 import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
@@ -23,10 +23,11 @@ import PreviewMarkdown from "./PreviewMarkdown";
 import ImageUpload from "./ImageUpload";
 import { CgDanger } from "react-icons/cg";
 import { useRouter } from "next/router";
-import { convertToString, uploadBlog } from "@/utils/util";
+import { convertToString, uploadBlog, uploadDraft } from "@/utils/util";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { ErrorMessage } from '@hookform/error-message';
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
@@ -41,6 +42,7 @@ interface FormValues {
     tags: string[];
     body: string;
     imageUpload: FileList | null;
+    errorFeild: string;
 }
 
 Image.configure({
@@ -55,7 +57,8 @@ export default function CreatePost(props: Props) {
     const imageUrlRef = useRef<string>("");
     const user = auth.currentUser;
 
-    const { control, formState: { errors, isDirty, isSubmitting }, watch, handleSubmit, reset,
+
+    const { control, formState: { errors, isDirty, isSubmitting, isValid }, watch, handleSubmit, reset,
         setValue: setFormValue, clearErrors, getValues, setError } = useForm<FormValues>({
             defaultValues: {
                 body: "",
@@ -65,6 +68,7 @@ export default function CreatePost(props: Props) {
                 imageUpload: null
             },
         });
+    const { errors: errors2 } = useFormState({ control });
 
     const editor = useEditor({
         extensions: [
@@ -117,6 +121,25 @@ export default function CreatePost(props: Props) {
         reset();
     }
 
+    async function handleSubmitDraft() {
+        if (user) {
+            try {
+                const docRef = await uploadDraft(user.uid, {
+                    title: getValues("title"),
+                    tags: getValues("tags"),
+                    body: editor && editor.getHTML(),
+                }, getValues("image_file")) as any;
+                console.log("draft Document written with ID: ", docRef.id);
+                router.push(`/${user.uid}/draft/${docRef.id}`);
+            } catch (error) {
+                setError("errorFeild", {
+                    type: "manual",
+                    message: `${error}`
+                })
+            }
+        }
+    }
+
     const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
         clearErrors();
         if (user) {
@@ -130,6 +153,10 @@ export default function CreatePost(props: Props) {
                 router.push(`/${user.uid}/${docRef.id}`);
             } catch (error) {
                 console.error("Error adding document: ", error);
+                setError("errorFeild", {
+                    type: "manual",
+                    message: `${error}`
+                })
             }
         }
     }
@@ -139,7 +166,7 @@ export default function CreatePost(props: Props) {
     }
 
     return (
-        <>
+        <div className={styles.wrapper}>
             <Modal opened={opened} centered onClose={close}
                 title="Are you sure you want to revert to the previous save ?" withCloseButton>
                 <Group spacing="md" align="center" mt="lg">
@@ -243,9 +270,10 @@ export default function CreatePost(props: Props) {
                             <RichTextEditor.Content />
                         </RichTextEditor>
                         <Group spacing="md" align="center" mt="lg">
-                            <Button loading={isSubmitting} variant="filled"
+                            <Button loading={isSubmitting} disabled={!isValid} variant="filled"
                                 type="submit" radius="md" color="violet" size="md">Publish</Button>
-                            <Button disabled={isSubmitting} variant="subtle" radius="md" size="md">Save Draft</Button>
+                            <Button disabled={isSubmitting} variant="subtle" radius="md" size="md"
+                                onClick={handleSubmitDraft}>Save Draft</Button>
                             {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo"
                                 size="md">Revert New Changes</Button>}
                         </Group>
@@ -260,9 +288,10 @@ export default function CreatePost(props: Props) {
                     <Alert icon={<CgDanger />} color="red"
                         style={{ marginBottom: "2em", marginTop: "2em", display: "block" }} title="Bummer">
                         <p>There are some errors in your form. Please fix them before submitting.</p>
+                        <ErrorMessage errors={errors} name="errorFeild" render={({ message }) => <Text weight="bold">{message}</Text>} />
                     </Alert>
                 }
             </div>
-        </>
+        </div>
     );
 }
