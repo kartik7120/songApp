@@ -5,10 +5,14 @@ import { BsBookmark } from "react-icons/bs";
 import { VscCopy } from "react-icons/vsc";
 import { SlOptions } from "react-icons/sl";
 import { useClipboard } from '@mantine/hooks';
-import {useRouter} from 'next/router';
+import { useRouter } from 'next/router';
 import styles from "../styles/sidepostmenu.module.scss";
 
-export default function SidePostMenu() {
+interface Props {
+    isDraft?: boolean;
+}
+
+export default function SidePostMenu(props: Props) {
 
     const clipboard = useClipboard({ timeout: 500 });
     const router = useRouter();
@@ -16,18 +20,20 @@ export default function SidePostMenu() {
     return (
         <div className={styles.wrapper}>
             <aside className={styles.container}>
-                <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                    <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
-                    <Text component="span" >0</Text>
-                </ActionIcon>
-                <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                    <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
-                    <Text component="span" >0</Text>
-                </ActionIcon>
-                <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                    <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
-                    <Text component="span" >0</Text>
-                </ActionIcon>
+                {!props.isDraft && <>
+                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                        <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
+                        <Text component="span" >0</Text>
+                    </ActionIcon>
+                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                        <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
+                        <Text component="span" >0</Text>
+                    </ActionIcon>
+                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                        <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
+                        <Text component="span" >0</Text>
+                    </ActionIcon>
+                </>}
                 <Menu shadow="md" position="right" withArrow={false} >
                     <Menu.Target>
                         <ActionIcon size="xl">
