@@ -53,3 +53,21 @@ export function uploadBlog(uid: string, data: any, image: File | null) {
         }
     });
 }
+
+export function uploadDraft(uid: string, data: any, image: File | null) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const imageUrl = await uploadBlogImage(image, uid);
+            const docRef = await addDoc(collection(db, "users", uid, "drafts"), {
+                title: data.title,
+                tags: data.tags,
+                body: data.body,
+                blogImage: imageUrl === "Image us null" ? null : imageUrl,
+            });
+            resolve(docRef as DocumentReference<DocumentData>);
+        } catch (error) {
+            reject(error);
+            console.log(error);
+        }
+    });
+}
