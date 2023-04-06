@@ -13,6 +13,7 @@ export const appRouter = router({
     getBlogPost: procedure.input(z.object({
         id: z.string(),
         uid: z.string(),
+        isDraft: z.boolean().optional(),
     })).output(z.object({
         title: z.string(),
         body: z.string(),
@@ -23,6 +24,19 @@ export const appRouter = router({
     }))
         .query(async ({ input }) => {
             try {
+                if (input.isDraft) {
+                    const docRef = doc(db, "users", input.uid, "drafts", input.id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        return docSnap.data() as any;
+                    }
+                    else {
+                        throw new TRPCError({
+                            code: 'NOT_FOUND',
+                            message: 'Not Found',
+                        })
+                    }
+                }
                 const docRef = doc(db, "users", input.uid, "blogs", input.id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
