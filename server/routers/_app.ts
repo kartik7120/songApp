@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { procedure, router } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 
 export const appRouter = router({
@@ -84,18 +84,19 @@ export const appRouter = router({
         }
     }),
     getBlogs: procedure.input(z.object({
-        uid: z.string().nullish(),
+        uid: z.string().nullable(),
     })).query(async ({ input }) => {
-        if (input.uid === null || input.uid === undefined) throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Bad Request',
-        });
 
         try {
-            const docRef = doc(db, "users", input.uid, "blogs");
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                return docSnap.data() as any;
+            if (input.uid === null || input.uid === undefined)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Bad Request',
+                });
+            const docRef = collection(db, "users", input.uid, "blogs");
+            const docSnap = await getDocs(docRef);
+            if (docSnap.size > 0) {
+                return docSnap.docs.map((doc) => doc.data()) as any;
             }
             else {
                 throw new TRPCError({
