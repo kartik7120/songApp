@@ -1,0 +1,19 @@
+.container1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.container2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badgeContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  flex-wrap: wrap;
+}
