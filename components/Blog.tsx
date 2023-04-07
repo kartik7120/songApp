@@ -1,4 +1,4 @@
-import { Avatar, Badge, Paper, Text, Title } from "@mantine/core";
+import { Avatar, Badge, Button, Paper, Text, Title } from "@mantine/core";
 import { Image } from '@mantine/core';
 import Link from "next/link";
 import styles from "../styles/blog.module.scss";
@@ -29,6 +29,11 @@ export default function Blog(props: Props) {
                             Posted on Mar 29
                         </Text>
                     </div>
+                    <Button.Group style={{ marginRight: "auto" }}>
+                        <Button variant="default">Edit</Button>
+                        <Button variant="default">Manage</Button>
+                        <Button variant="default">States</Button>
+                    </Button.Group>
                 </div>
                 <Title order={1} style={{ marginBottom: "0.5em", wordBreak: "break-word", marginTop: "0.5em" }}>
                     {props.title}
