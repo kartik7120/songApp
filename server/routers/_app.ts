@@ -58,6 +58,61 @@ export const appRouter = router({
                 });
             }
         }),
+    getUser: procedure.input(z.object({
+        uid: z.string(),
+    })).query(async ({ input }) => {
+        try {
+            const docRef = doc(db, "users", input.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                return docSnap.data() as any;
+            }
+            else {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Not Found',
+                })
+            }
+        } catch (error) {
+            if (error instanceof TRPCError) {
+                throw error;
+            }
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    getBlogs: procedure.input(z.object({
+        uid: z.string().nullish(),
+    })).query(async ({ input }) => {
+        if (input.uid === null || input.uid === undefined) throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Bad Request',
+        });
+
+        try {
+            const docRef = doc(db, "users", input.uid, "blogs");
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                return docSnap.data() as any;
+            }
+            else {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Not Found',
+                })
+            }
+        } catch (error) {
+            if (error instanceof TRPCError) {
+                throw error;
+            }
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
 })
 
 export type AppRouter = typeof appRouter;
