@@ -104,7 +104,7 @@ export default function Navbar() {
                             </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                            <Menu.Item>
+                            <Menu.Item onClick={() => router.push(`/${user.uid}/profile`)}>
                                 {user.displayName}
                             </Menu.Item>
                             <Menu.Divider />
