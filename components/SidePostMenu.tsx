@@ -1,4 +1,4 @@
-import { ActionIcon, clsx, Group, Menu, Text } from "@mantine/core";
+import { ActionIcon, clsx, Group, Menu, Text, Tooltip } from "@mantine/core";
 import { RiHeartAddLine } from "react-icons/ri";
 import { FaRegCommentAlt } from "react-icons/fa";
 import { BsBookmark } from "react-icons/bs";
@@ -21,18 +21,24 @@ export default function SidePostMenu(props: Props) {
         <div className={styles.wrapper}>
             <aside className={styles.container}>
                 {!props.isDraft && <>
-                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                        <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
-                        <Text component="span" >0</Text>
-                    </ActionIcon>
-                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                        <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
-                        <Text component="span" >0</Text>
-                    </ActionIcon>
-                    <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
-                        <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
-                        <Text component="span" >0</Text>
-                    </ActionIcon>
+                    <Tooltip label="Add Reaction" transitionProps={{ transition: "pop", duration: 300 }} >
+                        <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                            <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
+                            <Text component="span" >0</Text>
+                        </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Jump to comments" transitionProps={{ transition: "pop", duration: 300 }} >
+                        <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                            <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
+                            <Text component="span" >0</Text>
+                        </ActionIcon>
+                    </Tooltip>
+                    <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }} >
+                        <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                            <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
+                            <Text component="span" >0</Text>
+                        </ActionIcon>
+                    </Tooltip>
                 </>}
                 <Menu shadow="md" position="right" withArrow={false} >
                     <Menu.Target>
