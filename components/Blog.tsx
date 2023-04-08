@@ -7,6 +7,7 @@ import CommentSection from "./CommentSection";
 import parse from 'html-react-parser';
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/server/routers/_app";
+import { useRouter } from "next/router";
 
 type Props = inferRouterOutputs<AppRouter>["getBlogPost"] & {
     targetRef: any;
@@ -14,6 +15,10 @@ type Props = inferRouterOutputs<AppRouter>["getBlogPost"] & {
 
 
 export default function Blog(props: Props) {
+
+    const router = useRouter();
+    const { user, post } = router.query;
+    
     return (
         <Paper withBorder style={{ maxWidth: 1000 }} radius="md">
             <div>
@@ -33,7 +38,7 @@ export default function Blog(props: Props) {
                         </Text>
                     </div>
                     <Button.Group style={{ marginRight: "auto" }}>
-                        <Button variant="default">Edit</Button>
+                        <Button variant="default" component="a" href={`/${user}/${post}/edit`}>Edit</Button>
                         <Button variant="default">Manage</Button>
                         <Button variant="default">States</Button>
                     </Button.Group>
@@ -54,7 +59,7 @@ export default function Blog(props: Props) {
                     {parse(props.body)}
                 </Text>
                 <Divider my="md" />
-                <CommentSection targetRef={props.targetRef}/>
+                <CommentSection targetRef={props.targetRef} />
             </div>
         </Paper>
     )
