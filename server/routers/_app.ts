@@ -22,6 +22,8 @@ export const appRouter = router({
         blogImage: z.string().optional(),
         id: z.string().optional(),
         tags: z.array(z.string()).optional(),
+        reactions: z.array(z.string()).optional(),
+        saves: z.number().optional(),
     }))
         .query(async ({ input }) => {
             try {
