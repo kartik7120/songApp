@@ -8,7 +8,10 @@ import parse from 'html-react-parser';
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/server/routers/_app";
 
-type Props = inferRouterOutputs<AppRouter>["getBlogPost"];
+type Props = inferRouterOutputs<AppRouter>["getBlogPost"] & {
+    targetRef: any;
+};
+
 
 export default function Blog(props: Props) {
     return (
@@ -51,7 +54,7 @@ export default function Blog(props: Props) {
                     {parse(props.body)}
                 </Text>
                 <Divider my="md" />
-                <CommentSection />
+                <CommentSection targetRef={props.targetRef}/>
             </div>
         </Paper>
     )
