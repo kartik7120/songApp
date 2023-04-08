@@ -1,28 +1,63 @@
-import { ActionIcon, clsx, Group, Menu, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, clsx, Group, Menu, Text, Tooltip } from "@mantine/core";
 import { RiHeartAddLine } from "react-icons/ri";
 import { FaRegCommentAlt } from "react-icons/fa";
 import { BsBookmark } from "react-icons/bs";
 import { VscCopy } from "react-icons/vsc";
 import { SlOptions } from "react-icons/sl";
-import { useClipboard } from '@mantine/hooks';
+import { useClipboard, useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import styles from "../styles/sidepostmenu.module.scss";
+import { trpc } from "@/utils/trpc";
+import { auth } from "@/firebase";
+import { Modal } from '@mantine/core';
 
 interface Props {
     isDraft?: boolean;
+    postId: string;
+    userId: string;
 }
 
 export default function SidePostMenu(props: Props) {
 
+    const { data, error, isError, isLoading, mutate, isSuccess } = trpc.post.addReactionToPost.useMutation({
+        onSuccess(data, variables, context) {
+
+        },
+    });
+    const [opened, { open, close }] = useDisclosure(false);
+
+    const user = auth.currentUser;
     const clipboard = useClipboard({ timeout: 500 });
     const router = useRouter();
 
-    return (
+    return (<>
+        <Modal opened={opened} onClose={close} title="Log in to continue" withCloseButton>
+            <Button type="button" mt={10} variant="filled" color="violet" fullWidth onClick={() => {
+                router.push('/entry?login=true');
+            }}>
+                Log in
+            </Button>
+            <Button type="button" fullWidth mt={10} variant="subtle" color="violet" onClick={() => {
+                router.push('/entry');
+            }}>
+                Sign up
+            </Button>
+        </Modal>
         <div className={styles.wrapper}>
             <aside className={styles.container}>
                 {!props.isDraft && <>
                     <Tooltip label="Add Reaction" transitionProps={{ transition: "pop", duration: 300 }} >
-                        <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
+                        <ActionIcon size="xl" variant="transparent" className={styles.btnContainer} onClick={() => {
+                            if (user === null) {
+                                open();
+                                return;
+                            }
+                            mutate({
+                                postId: props.postId,
+                                userId: props.userId,
+                                respondentId: user!.uid
+                            })
+                        }}>
                             <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
                             <Text component="span" >0</Text>
                         </ActionIcon>
@@ -33,7 +68,12 @@ export default function SidePostMenu(props: Props) {
                             <Text component="span" >0</Text>
                         </ActionIcon>
                     </Tooltip>
-                    <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }} >
+                    <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }} onClick={() => {
+                        if (user === null) {
+                            open();
+                            return;
+                        }
+                    }}>
                         <ActionIcon size="xl" variant="transparent" className={styles.btnContainer}>
                             <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
                             <Text component="span" >0</Text>
@@ -65,5 +105,6 @@ export default function SidePostMenu(props: Props) {
                 </Menu>
             </aside>
         </div>
+    </>
     )
 }
