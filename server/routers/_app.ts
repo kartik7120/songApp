@@ -96,7 +96,7 @@ export const appRouter = router({
             const docRef = collection(db, "users", input.uid, "blogs");
             const docSnap = await getDocs(docRef);
             if (docSnap.size > 0) {
-                return docSnap.docs.map((doc) => doc.data()) as any;
+                return docSnap.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as any;
             }
             else {
                 throw new TRPCError({
