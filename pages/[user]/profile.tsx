@@ -6,7 +6,7 @@ import Head from "next/head";
 
 export default function Profile() {
     const user = auth.currentUser;
-    const { data, error, isLoading, } = trpc.getBlogs.useQuery({ uid: user?.uid as string || null })
+    const { data, error, isLoading, fetchStatus, isSuccess, isError } = trpc.getBlogs.useQuery({ uid: user?.uid as string || null });
     return <>
         <Head>
             <title>{user?.displayName}</title>
@@ -18,11 +18,8 @@ export default function Profile() {
                 <Text>Bio of the user</Text>
             </div>
         </Paper>
-        <PreviewBlog blog={{
-            title: "Title",
-            body: "Body",
-            tags: ["tag1", "tag2", "tag3", "tags4"],
-            description: "Description"
-        }} />
+        {data && data.map((blog: any) => (
+            <PreviewBlog key={blog.id} blog={blog} />
+        ))}
     </>;
 }
