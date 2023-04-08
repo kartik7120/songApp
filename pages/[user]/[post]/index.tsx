@@ -28,7 +28,7 @@ export default function BlogPost() {
 
     return (
         <div className={styles.container}>
-            <SidePostMenu scrollIntoView={scrollIntoView} postId={post as string} userId={user as string} reactionCount={data.reactions && data.reactions.length} />
+            <SidePostMenu bookmarkCount={data.saves} scrollIntoView={scrollIntoView} postId={post as string} userId={user as string} reactionCount={data.reactions && data.reactions.length} />
             <Blog targetRef={targetRef} blogImage={data.blogImage} body={data.body} title={data.title} tags={data.tags} id={data.id} />
             <UserInfo />
         </div>
