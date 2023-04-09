@@ -9,7 +9,7 @@ interface Props {
 export default function CommentSection(props:Props) {
 
     return (
-        <div className={styles.container} ref={props.targetRef}>
+        <div className={styles.container} ref={props.targetRef} id="commentSection">
             <Avatar src={"https://avatars.githubusercontent.com/u/25126241?v=4"} size="md" radius="xl" />
             <EditorCom />
         </div>
