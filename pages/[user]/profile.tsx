@@ -1,8 +1,10 @@
 import PreviewBlog from "@/components/PreviewBlog";
+import UserStats from "@/components/UserStats";
 import { auth } from "@/firebase";
 import { trpc } from "@/utils/trpc";
 import { Avatar, Paper, Text, Title } from "@mantine/core";
 import Head from "next/head";
+import styles from "../../styles/profileStyle.module.scss";
 
 export default function Profile() {
     const user = auth.currentUser;
@@ -18,8 +20,15 @@ export default function Profile() {
                 <Text>Bio of the user</Text>
             </div>
         </Paper>
-        {data && data.map((blog: any) => (
-            <PreviewBlog key={blog.id} blog={blog} />
-        ))}
+        <div className={styles.container}>
+            <div>
+                <UserStats numPosts={data?.length || 0} numComments={0} />
+            </div>
+            <div className={styles.container2}>
+                {data && data.map((blog: any) => (
+                    <PreviewBlog key={blog.id} blog={blog} />
+                ))}
+            </div>
+        </div>
     </>;
 }
