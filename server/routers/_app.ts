@@ -31,7 +31,7 @@ export const appRouter = router({
                     const docRef = doc(db, "users", input.uid, "drafts", input.id);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        return docSnap.data() as any;
+                        return { ...docSnap.data(), id: input.id } as any;
                     }
                     else {
                         throw new TRPCError({
@@ -43,7 +43,7 @@ export const appRouter = router({
                 const docRef = doc(db, "users", input.uid, "blogs", input.id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    return docSnap.data() as any;
+                    return { ...docSnap.data(), id: input.id } as any;
                 }
                 else {
                     throw new TRPCError({
