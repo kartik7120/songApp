@@ -50,6 +50,33 @@ const postRouter = router({
             });
         }
     }),
+    updatePost: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+        title: z.string(),
+        body: z.string(),
+        tags: z.array(z.string()),
+        isDraft: z.boolean(),
+        imageUpload: z.string(),
+    })).mutation(async ({ input }) => {
+        try {
+            const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+            const docSnap = await updateDoc(docRef, {
+                title: input.title,
+                body: input.body,
+                tags: input.tags,
+                isDraft: input.isDraft,
+                blogImage: input.imageUpload,
+            });
+
+            return "Post updated successfully";
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
 })
 
 export default postRouter;
