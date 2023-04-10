@@ -1,7 +1,7 @@
 import { Editor } from "@tiptap/react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase";
-import { DocumentData, DocumentReference, addDoc, collection } from "firebase/firestore";
+import { DocumentData, DocumentReference, addDoc, collection, doc, updateDoc } from "firebase/firestore";
 export function addImage(editor: Editor | null, url: string) {
 
     if (editor === null) {
@@ -65,6 +65,31 @@ export function uploadDraft(uid: string, data: any, image: File | null) {
                 blogImage: imageUrl === "Image us null" ? null : imageUrl,
             });
             resolve(docRef as DocumentReference<DocumentData>);
+        } catch (error) {
+            reject(error);
+            console.log(error);
+        }
+    });
+}
+
+export function uploadBlogChanges(uid: string, data: any, image: File | null | string, postId: string) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log(`post id = ${postId}`);
+            console.log(`blog data = ${JSON.stringify(data)}`);
+            let imageUrl = "";
+            if (typeof image === "string") {
+                imageUrl = image;
+            } else {
+                imageUrl = await uploadBlogImage(image, uid) as string;
+            }
+            await updateDoc(doc(db, "users", uid, "blogs", postId), {
+                title: data.title,
+                tags: data.tags,
+                body: data.body,
+                blogImage: imageUrl === "Image us null" ? null : imageUrl,
+            })
+            resolve("Blog updated successfully");
         } catch (error) {
             reject(error);
             console.log(error);
