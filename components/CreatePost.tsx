@@ -10,7 +10,7 @@ import { useForm, SubmitHandler, SubmitErrorHandler } from "react-hook-form";
 import { BsCardImage, BsUpload } from "react-icons/bs";
 import { useDisclosure } from "@mantine/hooks";
 import { SegmentedControl } from '@mantine/core';
-import { useEditor } from "@tiptap/react";
+import { Editor, useEditor } from "@tiptap/react";
 import Highlight from '@tiptap/extension-highlight';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -23,11 +23,13 @@ import PreviewMarkdown from "./PreviewMarkdown";
 import ImageUpload from "./ImageUpload";
 import { CgDanger } from "react-icons/cg";
 import { useRouter } from "next/router";
-import { convertToString, uploadBlog, uploadDraft } from "@/utils/util";
+import { convertToString, uploadBlog, uploadBlogChanges, uploadDraft } from "@/utils/util";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { ErrorMessage } from '@hookform/error-message';
+import { useContext, MutableRefObject, Dispatch } from "react";
+import { Context } from "@/pages/[user]/[post]/edit";
 
 interface Props {
     firstRef: React.RefObject<{ isFocused: boolean }> | undefined,
@@ -56,19 +58,7 @@ export default function CreatePost(props: Props) {
     const [body, setBody] = useState<string>("");
     const imageUrlRef = useRef<string>("");
     const user = auth.currentUser;
-
-
-    const { control, formState: { errors, isDirty, isSubmitting, isValid }, watch, handleSubmit, reset,
-        setValue: setFormValue, clearErrors, getValues, setError } = useForm<FormValues>({
-            defaultValues: {
-                body: "",
-                image_file: null,
-                tags: [],
-                title: "",
-                imageUpload: null
-            },
-        });
-    const { errors: errors2 } = useFormState({ control });
+    const context = useContext(Context) as any;
 
     const editor = useEditor({
         extensions: [
@@ -81,7 +71,7 @@ export default function CreatePost(props: Props) {
             Link,
             Image
         ],
-        content: body ? body : '',
+        content: body !== "" ? body : '',
         autofocus: 'end',
         onFocus: () => {
             props.setEditorFocused(true);
@@ -90,20 +80,46 @@ export default function CreatePost(props: Props) {
         },
     });
 
+
+    const { control, formState: { errors, isDirty, isSubmitting, isValid, dirtyFields }, watch, handleSubmit, reset,
+        setValue: setFormValue, clearErrors, getValues, setError } = useForm<FormValues>({
+            defaultValues: {
+                body: "",
+                image_file: null,
+                tags: [],
+                title: "",
+                imageUpload: null
+            },
+        });
+    const { errors: errors2 } = useFormState({ control });
+
     useEffect(() => {
-        if (localStorage.getItem(router.route)) {
+        console.log(`data from context blog post: ${JSON.stringify(context.data)}`);
+        context.setEditorState(editor);
+    }, [context, editor])
+
+    useEffect(() => {
+        if (localStorage.getItem(router.route) && context.isEdit === false) {
             const data = JSON.parse(localStorage.getItem(router.route) as string);
             setFormValue("body", data.body);
             setFormValue("image_file", data.image_file);
             setFormValue("tags", data.tags);
             setFormValue("title", data.title);
             setFormValue("imageUpload", data.imageUpload);
-            setBody(data.body);
+            editor?.commands.setContent(data.body);
+        }
+        if (context.isEdit === true && context.isSuccess) {
+            // setFormValue("body", context.data.body);
+            // setFormValue("image_file", context.data.image_file);
+            setFormValue("tags", context.data.tags);
+            setFormValue("title", context.data.title);
+            // setFormValue("imageUpload", context.data.imageUpload);
+            editor?.commands.setContent(context.data.body);
         }
         return () => {
             localStorage.setItem(router.route, convertToString({ ...getValues(), body: editor && editor.getHTML() }));
         };
-    }, [router.route, setFormValue, getValues, editor]);
+    }, [router.route, setFormValue, getValues, editor, context]);
 
 
     const tags = Array.from({ length: 10 }, (_, i) => ({
@@ -157,6 +173,32 @@ export default function CreatePost(props: Props) {
                     type: "manual",
                     message: `${error}`
                 })
+            }
+        }
+    }
+
+    async function saveChanges() {
+        if (user) {
+            try {
+                if (dirtyFields['image_file'] === false) {
+                    await uploadBlogChanges(user.uid, {
+                        title: getValues("title"),
+                        tags: getValues("tags"),
+                        body: editor && editor.getHTML(),
+                    }, context.data.image_file, context.data.id);
+                } else {
+                    await uploadBlogChanges(user.uid, {
+                        title: getValues("title"),
+                        tags: getValues("tags"),
+                        body: editor && editor.getHTML(),
+                    }, getValues("image_file"), context.data.id);
+                }
+                router.push(`/${user.uid}/${context.data.id}`);
+            } catch (error) {
+                setError("errorFeild", {
+                    type: "manual",
+                    message: `${error}`
+                });
             }
         }
     }
@@ -270,10 +312,13 @@ export default function CreatePost(props: Props) {
                             <RichTextEditor.Content />
                         </RichTextEditor>
                         <Group spacing="md" align="center" mt="lg">
-                            <Button loading={isSubmitting} disabled={!isValid} variant="filled"
-                                type="submit" radius="md" color="violet" size="md">Publish</Button>
-                            <Button disabled={isSubmitting} variant="subtle" radius="md" size="md"
-                                onClick={handleSubmitDraft}>Save Draft</Button>
+                            {context.isEdit === false ? <Button loading={isSubmitting} disabled={!isValid} variant="filled"
+                                type="submit" radius="md" color="violet" size="md">Publish</Button> :
+                                <Button loading={isSubmitting} variant="filled"
+                                    type="button" onClick={saveChanges} radius="md" color="violet" size="md">Save changes</Button>
+                            }
+                            {!context.isEdit && <Button disabled={isSubmitting} variant="subtle" radius="md" size="md"
+                                onClick={handleSubmitDraft}>Save Draft</Button>}
                             {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo"
                                 size="md">Revert New Changes</Button>}
                         </Group>
