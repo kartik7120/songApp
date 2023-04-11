@@ -94,12 +94,12 @@ export default function CreatePost(props: Props) {
     const { errors: errors2 } = useFormState({ control });
 
     useEffect(() => {
-        console.log(`data from context blog post: ${JSON.stringify(context.data)}`);
-        context.setEditorState(editor);
+        if (context)
+            context.setEditorState(editor);
     }, [context, editor])
 
     useEffect(() => {
-        if (localStorage.getItem(router.route) && context.isEdit === false) {
+        if (localStorage.getItem(router.route) && context && context.isEdit === false) {
             const data = JSON.parse(localStorage.getItem(router.route) as string);
             setFormValue("body", data.body);
             setFormValue("image_file", data.image_file);
@@ -108,7 +108,7 @@ export default function CreatePost(props: Props) {
             setFormValue("imageUpload", data.imageUpload);
             editor?.commands.setContent(data.body);
         }
-        if (context.isEdit === true && context.isSuccess) {
+        if (context && context.isEdit === true && context.isSuccess) {
             // setFormValue("body", context.data.body);
             // setFormValue("image_file", context.data.image_file);
             setFormValue("tags", context.data.tags);
@@ -145,7 +145,6 @@ export default function CreatePost(props: Props) {
                     tags: getValues("tags"),
                     body: editor && editor.getHTML(),
                 }, getValues("image_file")) as any;
-                console.log("draft Document written with ID: ", docRef.id);
                 router.push(`/${user.uid}/draft/${docRef.id}`);
             } catch (error) {
                 setError("errorFeild", {
@@ -312,12 +311,12 @@ export default function CreatePost(props: Props) {
                             <RichTextEditor.Content />
                         </RichTextEditor>
                         <Group spacing="md" align="center" mt="lg">
-                            {context.isEdit === false ? <Button loading={isSubmitting} disabled={!isValid} variant="filled"
+                            {!context ? <Button loading={isSubmitting} disabled={!isValid} variant="filled"
                                 type="submit" radius="md" color="violet" size="md">Publish</Button> :
                                 <Button loading={isSubmitting} variant="filled"
                                     type="button" onClick={saveChanges} radius="md" color="violet" size="md">Save changes</Button>
                             }
-                            {!context.isEdit && <Button disabled={isSubmitting} variant="subtle" radius="md" size="md"
+                            {context && !context.isEdit && <Button disabled={isSubmitting} variant="subtle" radius="md" size="md"
                                 onClick={handleSubmitDraft}>Save Draft</Button>}
                             {isDirty && <Button variant="subtle" onClick={open} radius="md" color="indigo"
                                 size="md">Revert New Changes</Button>}
