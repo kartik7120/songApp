@@ -8,6 +8,7 @@ import parse from 'html-react-parser';
 import { inferRouterOutputs } from "@trpc/server";
 import { AppRouter } from "@/server/routers/_app";
 import { useRouter } from "next/router";
+import { auth } from "@/firebase";
 
 type Props = inferRouterOutputs<AppRouter>["getBlogPost"] & {
     targetRef: any;
@@ -18,7 +19,7 @@ export default function Blog(props: Props) {
 
     const router = useRouter();
     const { user, post } = router.query;
-    
+    const currentUser = auth.currentUser;
     return (
         <Paper withBorder style={{ maxWidth: 1000 }} radius="md">
             <div>
@@ -37,11 +38,11 @@ export default function Blog(props: Props) {
                             Posted on Mar 29
                         </Text>
                     </div>
-                    <Button.Group style={{ marginRight: "auto" }}>
+                    {currentUser && currentUser?.uid === user && <Button.Group style={{ marginRight: "auto" }}>
                         <Button variant="default" component="a" href={`/${user}/${post}/edit`}>Edit</Button>
                         <Button variant="default">Manage</Button>
                         <Button variant="default">States</Button>
-                    </Button.Group>
+                    </Button.Group>}
                 </div>
                 <Title order={1} style={{ marginBottom: "0.5em", wordBreak: "break-word", marginTop: "0.5em" }}>
                     {props.title}
