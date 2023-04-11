@@ -13,13 +13,15 @@ export default function Profile() {
         <Head>
             <title>{user?.displayName}</title>
         </Head>
-        <Paper p="md" shadow="md" withBorder>
-            <div>
+        <div className={styles.paperClass}>
+            <Paper p="md" shadow="md" withBorder>
                 <Avatar src={user && user?.photoURL} size="xl" radius="xl" />
-                <Title order={1}>{user?.displayName}</Title>
-                <Text>Bio of the user</Text>
-            </div>
-        </Paper>
+                <div className={styles.upperContainer}>
+                    <Title order={1}>{user?.displayName}</Title>
+                    <Text>Bio of the user</Text>
+                </div>
+            </Paper>
+        </div>
         <div className={styles.container}>
             <div>
                 <UserStats numPosts={data?.length || 0} numComments={0} />
