@@ -111,12 +111,16 @@ export default function Navbar() {
                             <Menu.Item>
                                 Dashboard
                             </Menu.Item>
-                            <Menu.Item>
-                                Create Post
-                            </Menu.Item>
-                            <Menu.Item>
-                                Reading List
-                            </Menu.Item>
+                            <Link href="/new" style={{ textDecoration: "none" }}>
+                                <Menu.Item>
+                                    Create Post
+                                </Menu.Item>
+                            </Link>
+                            <Link href="/readingList" style={{ textDecoration: "none" }}>
+                                <Menu.Item>
+                                    Reading List
+                                </Menu.Item>
+                            </Link>
                             <Link href="/settings" style={{ textDecoration: "none" }}>
                                 <Menu.Item>
                                     Settings
