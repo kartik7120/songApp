@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   word-wrap: break-word;
-  gap: 15px;
+  gap: 8px;
 }
 
 .container3 {
@@ -17,4 +17,9 @@
   flex-direction: row;
   word-wrap: break-word;
   gap: 12px;
+}
+
+.wrapper {
+  margin-left: 8em;
+  margin-right: 8em;
 }
