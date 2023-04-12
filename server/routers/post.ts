@@ -2,7 +2,10 @@ import { z } from "zod";
 import { router, procedure } from "../trpc";
 import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, increment, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { TRPCError } from "@trpc/server";
+import { TRPCError, inferRouterOutputs } from "@trpc/server";
+import { appRouter } from "./_app";
+
+type Post = inferRouterOutputs<typeof appRouter>["getBlogPost"];
 
 const postRouter = router({
     addReactionToPost: procedure.input(z.object({
@@ -79,21 +82,44 @@ const postRouter = router({
     }),
     getSavePosts: procedure.input(z.object({
         userId: z.string().nullable(),
-    })).query(async ({ input }) => {
-        if (input.userId === null) {
-            return null;
-        }
-        try {
-            const docRef = collection(db, "users", input.userId, "saved");
-            const docSnap = await getDocs(docRef);
-            return docSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        } catch (error) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: 'Internal Server Error',
-            });
-        }
-    }),
+    })).output(z.array(
+        z.object({
+            id: z.string(),
+            title: z.string(),
+            body: z.string(),
+            tags: z.array(z.string()).optional(),
+            isDraft: z.boolean().optional(),
+            blogImage: z.string().optional(),
+            userId: z.string(),
+        })).nullable()).
+        query(async ({ input }) => {
+
+            if (input.userId === null) {
+                return null;
+            }
+
+            try {
+                const docRef = collection(db, "users", input.userId, "saved");
+                const docSnap = await getDocs(docRef);
+                const postArr = docSnap.docs.map(doc => ({ ...doc.data(), id: doc.id })) as any[];
+                const data = await Promise.all(postArr.map(async (post) => {
+                    const docRef = doc(db, "users", post.userId, "blogs", post.postId);
+                    const docSnap = await getDoc(docRef);
+                    return {
+                        ...docSnap.data(),
+                        id: docSnap.id,
+                        userId: post.userId,
+                    }
+                }));
+
+                return data as any;
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
+            }
+        }),
 })
 
 export default postRouter;
