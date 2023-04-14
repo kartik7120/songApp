@@ -31,7 +31,7 @@ export default function ReadingList() {
                             </div>
                             <div className={styles.container3}>
                                 <Text size="md" weight={500}>
-                                    Blog Author
+                                    {post.author}
                                 </Text>
                                 <Text size="md" weight={500}>
                                     {post.tags && post.tags.map((tag) => (
@@ -39,7 +39,7 @@ export default function ReadingList() {
                                     ))}
                                 </Text>
                                 <Text>
-                                    Date
+                                    {/* {post.createdAt && post.createdAt.toDate()} */}
                                 </Text>
                             </div>
                         </div>
