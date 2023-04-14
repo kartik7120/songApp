@@ -163,6 +163,9 @@ export default function CreatePost(props: Props) {
                     title: data.title,
                     tags: data.tags,
                     body: editor && editor.getHTML(),
+                    author: user.displayName,
+                    author_id: user.uid,
+                    profile_image: user.photoURL,
                 }, data.image_file!) as any;
                 console.log("Document written with ID: ", docRef.id);
                 router.push(`/${user.uid}/${docRef.id}`);
