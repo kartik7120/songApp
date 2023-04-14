@@ -12,6 +12,8 @@ import { auth } from "@/firebase";
 
 type Props = inferRouterOutputs<AppRouter>["getBlogPost"] & {
     targetRef: any;
+    postId: string;
+    userId: string;
 };
 
 
@@ -60,7 +62,7 @@ export default function Blog(props: Props) {
                     {parse(props.body)}
                 </Text>
                 <Divider my="md" />
-                <CommentSection targetRef={props.targetRef} />
+                <CommentSection postId={props.postId} userId={props.userId} targetRef={props.targetRef} />
             </div>
         </Paper>
     )
