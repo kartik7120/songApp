@@ -1,7 +1,7 @@
 import { Editor } from "@tiptap/react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase";
-import { DocumentData, DocumentReference, addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { DocumentData, DocumentReference, addDoc, collection, doc, updateDoc, Timestamp } from "firebase/firestore";
 export function addImage(editor: Editor | null, url: string) {
 
     if (editor === null) {
@@ -45,6 +45,13 @@ export function uploadBlog(uid: string, data: any, image: File | null) {
                 tags: data.tags,
                 body: data.body,
                 blogImage: imageUrl === "Image us null" ? null : imageUrl,
+                createdAt: Timestamp.fromDate(new Date()),
+                author: data.author,
+            });
+            await updateDoc(doc(db, "users", uid), {
+                profile_image_url: data.profile_image_url,
+                uid: uid,
+                name: data.author,
             });
             resolve(docRef as DocumentReference<DocumentData>);
         } catch (error) {
