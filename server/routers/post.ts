@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, procedure } from "../trpc";
-import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, increment, updateDoc } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, query, updateDoc, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { TRPCError, inferRouterOutputs } from "@trpc/server";
 import { appRouter } from "./_app";
@@ -91,6 +91,9 @@ const postRouter = router({
             isDraft: z.boolean().optional(),
             blogImage: z.string().optional(),
             userId: z.string(),
+            author: z.string().optional(),
+            createdAt: z.date().optional(),
+            profileImage: z.string().optional(),
         })).nullable()).
         query(async ({ input }) => {
 
@@ -105,14 +108,127 @@ const postRouter = router({
                 const data = await Promise.all(postArr.map(async (post) => {
                     const docRef = doc(db, "users", post.userId, "blogs", post.postId);
                     const docSnap = await getDoc(docRef);
+                    const userDoc = await getDoc(doc(db, "users", post.userId));
                     return {
                         ...docSnap.data(),
                         id: docSnap.id,
                         userId: post.userId,
+                        profileImage: userDoc.data()?.profileImage,
                     }
                 }));
 
                 return data as any;
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
+            }
+        }),
+    checkSavePost: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).output(z.boolean()).query(async ({ input }) => {
+        try {
+            const savePostId = query(collection(db, "users", input.userId, "saved"), where("postId", "==", input.postId));
+            const querySnapshot = await getDocs(savePostId);
+            return querySnapshot.size > 0;
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    checkReaction: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).output(z.boolean()).query(async ({ input }) => {
+        try {
+            const q = query(collection(db, "users", input.userId, "blogs"), where("reactions", "array-contains", input.userId));
+            const docSnap = await getDocs(q);
+            return docSnap.size > 0;
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    removeSavePost: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).mutation(async ({ input }) => {
+        try {
+            const q = query(collection(db, "users", input.userId, "saved"), where("postId", "==", input.postId));
+            const docSnap = await getDocs(q);
+            const docId = docSnap.docs[0].id;
+            const docRef = doc(db, "users", input.userId, "saved", docId);
+            await deleteDoc(docRef);
+
+            const docRef2 = doc(db, "users", input.userId, "blogs", input.postId);
+            await updateDoc(docRef2, {
+                saves: increment(-1),
+            });
+
+            return "Post removed successfully";
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    removeReaction: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).mutation(async ({ input }) => {
+        try {
+            const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+            await updateDoc(docRef, {
+                reactions: arrayRemove(input.userId),
+            });
+
+            return "Reaction removed successfully";
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    addComments: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+        comment: z.string(),
+    })).mutation(async ({ input }) => {
+        try {
+            const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+            const colRef = collection(db, "users", input.userId, "blogs", input.postId, "comments");
+            await addDoc(colRef, {
+                comment: input.comment,
+                userId: input.userId,
+                createdAt: new Date(),
+            });
+
+            return "Comment added successfully";
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
+    getComments: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).
+        query(async ({ input }) => {
+            try {
+                const colRef = collection(db, "users", input.userId, "blogs", input.postId, "comments");
+                const querySnapshot = await getDocs(colRef);
+                const data = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as any[];
+                return data;
             } catch (error) {
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
