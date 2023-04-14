@@ -15,8 +15,9 @@ export default function Profile() {
         </Head>
         <div className={styles.paperClass}>
             <Paper p="md" shadow="md" withBorder>
-                <Avatar src={user && user?.photoURL} size="xl" radius="xl" />
+                <Avatar src={user && user?.photoURL} size="xl" radius="xl" className={styles.avatarClass} />
                 <div className={styles.upperContainer}>
+                    <div className={styles.halfCircle}></div>
                     <Title order={1}>{user?.displayName}</Title>
                     <Text>Bio of the user</Text>
                 </div>
