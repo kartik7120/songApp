@@ -143,11 +143,22 @@ const postRouter = router({
     checkReaction: procedure.input(z.object({
         userId: z.string(),
         postId: z.string(),
+        reactantId: z.string(),
     })).output(z.boolean()).query(async ({ input }) => {
         try {
-            const q = query(collection(db, "users", input.userId, "blogs"), where("reactions", "array-contains", input.userId));
-            const docSnap = await getDocs(q);
-            return docSnap.size > 0;
+            const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+            const docSnap = await getDoc(docRef);
+
+            if(docSnap.exists() === false) return false;
+            const data = docSnap.data();
+
+            if(data?.reactions === undefined) return false;
+            for(let i = 0; i < data.reactions.length; i++) {
+                if(data.reactions[i] === input.reactantId) {
+                    return true;
+                }
+            }
+            return false;
         } catch (error) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
@@ -162,6 +173,7 @@ const postRouter = router({
         try {
             const q = query(collection(db, "users", input.userId, "saved"), where("postId", "==", input.postId));
             const docSnap = await getDocs(q);
+
             const docId = docSnap.docs[0].id;
             const docRef = doc(db, "users", input.userId, "saved", docId);
             await deleteDoc(docRef);
@@ -182,13 +194,13 @@ const postRouter = router({
     removeReaction: procedure.input(z.object({
         userId: z.string(),
         postId: z.string(),
+        reactUserId: z.string(),
     })).mutation(async ({ input }) => {
         try {
             const docRef = doc(db, "users", input.userId, "blogs", input.postId);
             await updateDoc(docRef, {
-                reactions: arrayRemove(input.userId),
+                reactions: arrayRemove(input.reactUserId),
             });
-
             return "Reaction removed successfully";
         } catch (error) {
             throw new TRPCError({
