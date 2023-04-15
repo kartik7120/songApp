@@ -213,6 +213,8 @@ const postRouter = router({
         userId: z.string(),
         postId: z.string(),
         comment: z.string(),
+        author_name:z.string(),
+        author_image:z.string(),
     })).mutation(async ({ input }) => {
         try {
             const docRef = doc(db, "users", input.userId, "blogs", input.postId);
@@ -220,7 +222,9 @@ const postRouter = router({
             await addDoc(colRef, {
                 comment: input.comment,
                 userId: input.userId,
-                createdAt: new Date(),
+                createdAt: new Date().getDate(),
+                author_name:input.author_name,
+                author_image:input.author_image,
             });
 
             return "Comment added successfully";
