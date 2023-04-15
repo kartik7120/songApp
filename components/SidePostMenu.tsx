@@ -8,9 +8,10 @@ import { useClipboard, useDisclosure } from '@mantine/hooks';
 import { useRouter } from 'next/router';
 import styles from "../styles/sidepostmenu.module.scss";
 import { trpc } from "@/utils/trpc";
-import { auth } from "@/firebase";
+import { auth, db } from "@/firebase";
 import { Modal } from '@mantine/core';
 import { useQueryClient } from "@tanstack/react-query";
+import { collection, collectionGroup, getDocs, query, where } from "firebase/firestore";
 
 interface Props {
     isDraft?: boolean;
@@ -24,18 +25,31 @@ interface Props {
 export default function SidePostMenu(props: Props) {
 
     const queryClient = useQueryClient();
-
-    const { data, error, isError, isLoading, mutate, isSuccess } = trpc.post.addReactionToPost.useMutation({
+    const { data, error, isError, mutate } = trpc.post.addReactionToPost.useMutation({
         onSuccess(data, variables, context) {
             console.log("success");
         },
     });
+
+    const { mutate: removeSavedMutate, isLoading: removeMutateLoading } = trpc.post.removeSavePost.useMutation();
+    const { mutate: removeReactionMutate, isLoading: removeReactionLoading } = trpc.post.removeReaction.useMutation();
 
     const savePostMutation = trpc.post.savePost.useMutation({
         onSuccess(data, variables, context) {
             console.log("success bookmarking post");
         },
     });
+
+    const { data: isSaved } = trpc.post.checkSavePost.useQuery({
+        postId: props.postId,
+        userId: props.userId
+    });
+
+    const { data: isReacted } = trpc.post.checkReaction.useQuery({
+        postId: props.postId,
+        userId: props.userId,
+        reactantId: auth.currentUser?.uid!
+    }, { enabled: auth.currentUser !== null });
 
     const [opened, { open, close }] = useDisclosure(false);
 
@@ -61,18 +75,26 @@ export default function SidePostMenu(props: Props) {
                 <aside className={styles.container}>
                     {!props.isDraft && <>
                         <Tooltip label="Add Reaction" transitionProps={{ transition: "pop", duration: 300 }} >
-                            <ActionIcon size="xl" variant="transparent" className={styles.btnContainer} onClick={() => {
+                            <ActionIcon size="xl" loading={removeReactionLoading} variant="transparent" className={styles.btnContainer} onClick={() => {
                                 if (user === null) {
                                     open();
                                     return;
                                 }
-                                mutate({
-                                    postId: props.postId,
-                                    userId: props.userId,
-                                    respondentId: user!.uid
-                                })
+                                if (isReacted === false)
+                                    mutate({
+                                        postId: props.postId,
+                                        userId: props.userId,
+                                        respondentId: user!.uid
+                                    })
+                                else {
+                                    removeReactionMutate({
+                                        postId: props.postId,
+                                        userId: props.userId,
+                                        reactUserId: user!.uid
+                                    })
+                                }
                             }}>
-                                <RiHeartAddLine size={30} className={clsx(styles.iconClass, styles.heartClass)} />
+                                <RiHeartAddLine color={isReacted ? "red" : ""} size={30} className={clsx(styles.iconClass, styles.heartClass)} />
                                 <Text component="span" >{props.reactionCount || 0}</Text>
                             </ActionIcon>
                         </Tooltip>
@@ -84,18 +106,27 @@ export default function SidePostMenu(props: Props) {
                                 <Text component="span" >0</Text>
                             </ActionIcon>
                         </Tooltip>
-                        <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }} >
-                            <ActionIcon size="xl" variant="transparent" className={styles.btnContainer} onClick={() => {
-                                if (user === null) {
-                                    open();
-                                    return;
-                                }
-                                savePostMutation.mutate({
-                                    postId: `${props.postId}`,
-                                    userId: `${user.uid}`
-                                });
-                            }}>
-                                <BsBookmark size={30} id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
+                        <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }}>
+                            <ActionIcon loading={removeMutateLoading} size="xl"
+                                variant="transparent" className={styles.btnContainer} onClick={() => {
+                                    if (user === null) {
+                                        open();
+                                        return;
+                                    }
+                                    if (isSaved === false)
+                                        savePostMutation.mutate({
+                                            postId: `${props.postId}`,
+                                            userId: `${user.uid}`
+                                        });
+                                    else {
+                                        removeSavedMutate({
+                                            postId: props.postId,
+                                            userId: props.userId
+                                        })
+                                    }
+                                }}>
+                                <BsBookmark color={isSaved ? "violet" : ""} size={30}
+                                    id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
                                 <Text component="span" >{props.bookmarkCount || 0}</Text>
                             </ActionIcon>
                         </Tooltip>
