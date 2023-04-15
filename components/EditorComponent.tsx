@@ -15,13 +15,20 @@ import { useEffect, useState } from "react";
 import { convertToString } from "@/utils/util";
 import { Button, Group, Paper, SegmentedControl, Text } from "@mantine/core";
 import parse from 'html-react-parser';
+import { trpc } from "@/utils/trpc";
+import { auth } from "@/firebase";
 
 interface EditorBody {
     body: string;
     imageUpload: FileList | null;
 }
 
-export default function EditorCom() {
+interface Props {
+    userId: string;
+    postId: string;
+}
+
+export default function EditorCom(props: Props) {
 
     const { control, handleSubmit, reset,
         setValue: setFormValue, clearErrors, getValues } = useForm<EditorBody>({
@@ -33,13 +40,6 @@ export default function EditorCom() {
 
     const router = useRouter();
     const [value, setValue] = useState('edit');
-    const onSubmit: SubmitHandler<EditorBody> = (data) => {
-        console.log(data);
-    }
-
-    const onError: SubmitErrorHandler<EditorBody> = (errors, e) => {
-        console.log(errors);
-    }
 
     const editor = useEditor({
         extensions: [
@@ -54,16 +54,29 @@ export default function EditorCom() {
         ],
     });
 
-    useEffect(() => {
-        if (localStorage.getItem(router.route)) {
-            const data = JSON.parse(localStorage.getItem(router.route + "comment") as string);
-            setFormValue("body", data.body);
-        }
-        return () => {
-            localStorage.setItem(router.route + "comment", convertToString({ ...getValues(), body: editor && editor.getHTML() }));
-        };
-    }, [router.route, setFormValue, getValues, editor]);
+    const { mutate, isLoading, isSuccess } = trpc.post.addComments.useMutation();
 
+    const onSubmit: SubmitHandler<EditorBody> = (data) => {
+        if (editor?.isEmpty || editor === null) return;
+
+        mutate({
+            comment: editor && editor?.getHTML(),
+            postId: props.postId,
+            userId: props.userId,
+            author_image: auth.currentUser?.photoURL!,
+            author_name: auth.currentUser?.displayName!,
+        });
+
+        console.log(data);
+    }
+
+    const onError: SubmitErrorHandler<EditorBody> = (errors, e) => {
+        console.log(errors);
+    }
+
+    if (isLoading) {
+        return <div>Uploading your comment...</div>
+    }
 
     return (
         <div>
@@ -130,6 +143,8 @@ export default function EditorCom() {
                     </RichTextEditor.Toolbar>
                     <RichTextEditor.Content />
                 </RichTextEditor>
+                <Button mt={19} loading={isLoading} disabled={editor?.isEmpty} color="violet"
+                    type="submit" variant="filled">Submit</Button>
             </form> : <div>
                 <Paper shadow="md" p="md" withBorder >
                     <Text>
@@ -137,7 +152,6 @@ export default function EditorCom() {
                     </Text>
                 </Paper>
             </div>}
-            <Button mt={19} disabled={editor?.isEmpty} color="violet" variant="filled">Submit</Button>
         </div>
     );
 }
