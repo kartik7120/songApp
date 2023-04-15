@@ -12,28 +12,26 @@ interface Props {
 
 export default function CommentSection(props: Props) {
 
-    const { mutate } = trpc.post.addComments.useMutation();
-    const { data, isLoading, isSuccess } = trpc.post.getComments.useQuery({
+    const { mutate, isSuccess: isMutationSuccess } = trpc.post.addComments.useMutation();
+    const { data, isLoading, isSuccess, refetch } = trpc.post.getComments.useQuery({
         postId: props.postId,
         userId: props.userId,
     });
 
-    const { data: userData } = trpc.getUser.useQuery({
-        uid: props.userId,
-    });
-
-    if (isSuccess) {
-        console.log(`comments = ${JSON.stringify(data)}`);
+    if(isMutationSuccess) {
+        refetch();
     }
 
     return (
         <>
             <div className={styles.commentWrapper}>
+                <Text size="xl" weight="bold">Comments</Text>
                 {isSuccess && data.map((comment) => {
                     return (
                         <div key={comment.id}>
                             <Paper shadow="sm" p="md" radius="md" withBorder>
-                                <Text size="xl" weight="bold">{comment.userId}</Text>
+                                <Avatar src={comment.author_image} size="md" radius="xl" mb={10} />
+                                <Text size="xl" weight="bold">{comment.author_name} {comment.createdAt}</Text>
                                 <Text size="md">{parse(comment.comment)}</Text>
                             </Paper>
                         </div>
