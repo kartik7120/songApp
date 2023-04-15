@@ -11,7 +11,6 @@ import { trpc } from "@/utils/trpc";
 import { auth, db } from "@/firebase";
 import { Modal } from '@mantine/core';
 import { useQueryClient } from "@tanstack/react-query";
-import { collection, collectionGroup, getDocs, query, where } from "firebase/firestore";
 
 interface Props {
     isDraft?: boolean;
