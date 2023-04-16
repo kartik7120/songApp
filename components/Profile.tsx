@@ -1,6 +1,11 @@
-import { FileInput, Paper, Text, TextInput, Title, Checkbox, Textarea, ColorInput } from "@mantine/core";
-import { useForm } from "react-hook-form";
+import { FileInput, Paper, Text, TextInput, Title, Checkbox, Textarea, ColorInput, Button, Alert } from "@mantine/core";
+import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import styles from "../styles/profile.module.scss";
+import { trpc } from "@/utils/trpc";
+import { auth } from "@/firebase";
+import { CgDanger } from "react-icons/cg";
+import { ErrorMessage } from "@hookform/error-message";
+import { useEffect } from "react";
 
 interface Form {
     name: string;
@@ -17,14 +22,16 @@ interface Form {
 
 export default function Profile() {
 
-    const { register, handleSubmit, control, formState, watch } = useForm<Form>({
+    const user = auth.currentUser;
+
+    const { register, handleSubmit, control, formState: { errors, isLoading, isSubmitting }, watch, setValue ,setError} = useForm<Form>({
         defaultValues: {
             name: "",
             email: "",
             username: "",
             profileImage: null,
             bio: "",
-            websiteUrl: "",
+            websiteUrl: undefined,
             location: "",
             education: "",
             work: "",
@@ -32,9 +39,48 @@ export default function Profile() {
         },
     });
 
+    const { data } = trpc.user.getUserInfo.useQuery({
+        userUid: user?.uid!,
+    });
+
+    const { mutate } = trpc.user.uploadUserInfo.useMutation();
+
+    const onsubmit: SubmitHandler<Form> = (data) => {
+        mutate({
+            name: data.name,
+            email: data.email,
+            username: data.username,
+            bio: data.bio,
+            websiteUrl: data.websiteUrl,
+            location: data.location,
+            education: data.education,
+            work: data.work,
+            brandingColor: data.brandingColor,
+            userUid: user?.uid!,
+        });
+    };
+
+    const onError: SubmitErrorHandler<Form> = (errors: any) => {
+        console.log(errors);
+    };
+
+    useEffect(() => {
+        if (data) {
+            setValue("name", data.name);
+            setValue("email", data.email);
+            setValue("username", data.username);
+            setValue("bio", data.bio);
+            setValue("websiteUrl", data.websiteUrl);
+            setValue("location", data.location);
+            setValue("education", data.education);
+            setValue("work", data.work);
+            setValue("brandingColor", data.brandingColor);
+        }
+    }, [data, setValue]);
+
     return (
         <div >
-            <form action="">
+            <form onSubmit={handleSubmit(onsubmit, onError)}>
                 <div className={styles.container}>
                     <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>User</Title>
@@ -61,8 +107,21 @@ export default function Profile() {
                         <Text>Used for backgrounds, borders etc.</Text>
                         <ColorInput label="Branding color" placeholder="Your brandingColor" />
                     </Paper>
+                    <Paper p="md" withBorder>
+                        <Button loading={isSubmitting} disabled={isLoading} type="submit" variant="filled" color="violet" fullWidth>
+                            Save Information
+                        </Button>
+                    </Paper>
                 </div>
             </form>
+            {
+                Object.keys(errors).length > 0 &&
+                <Alert icon={<CgDanger />} color="red"
+                    style={{ marginBottom: "2em", marginTop: "2em", display: "block" }} title="Bummer">
+                    <p>There are some errors in your form. Please fix them before submitting.</p>
+                    <ErrorMessage errors={errors} name="errorFeild" render={({ message }) => <Text weight="bold">{message}</Text>} />
+                </Alert>
+            }
         </div>
     )
 }
