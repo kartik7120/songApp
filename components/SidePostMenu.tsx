@@ -11,6 +11,8 @@ import { trpc } from "@/utils/trpc";
 import { auth, db } from "@/firebase";
 import { Modal } from '@mantine/core';
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { doc } from "firebase/firestore";
 
 interface Props {
     isDraft?: boolean;
@@ -28,6 +30,11 @@ export default function SidePostMenu(props: Props) {
         onSuccess(data, variables, context) {
             console.log("success");
         },
+    });
+
+    const { data: numberOfComments } = trpc.post.getNumberOfComments.useQuery({
+        postId: props.postId,
+        userId: props.userId
     });
 
     const { mutate: removeSavedMutate, isLoading: removeMutateLoading } = trpc.post.removeSavePost.useMutation();
@@ -102,7 +109,7 @@ export default function SidePostMenu(props: Props) {
                                 props.scrollIntoView();
                             }}>
                                 <FaRegCommentAlt size={30} id="comment" className={clsx(styles.iconClass, styles.commentClass)} />
-                                <Text component="span" >0</Text>
+                                <Text component="span" >{numberOfComments}</Text>
                             </ActionIcon>
                         </Tooltip>
                         <Tooltip label="Save post" transitionProps={{ transition: "pop", duration: 300 }}>

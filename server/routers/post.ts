@@ -252,6 +252,37 @@ const postRouter = router({
                 });
             }
         }),
+    getUserInfo: procedure.input(z.object({
+        userId: z.string(),
+    })).
+        query(async ({ input }) => {
+            try {
+                const docRef = doc(db, "users", input.userId);
+                const docSnap = await getDoc(docRef);
+                return docSnap.data();
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
+            }
+        }),
+    getNumberOfComments: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).
+        query(async ({ input }) => {
+            try {
+                const colRef = collection(db, "users", input.userId, "blogs", input.postId, "comments");
+                const querySnapshot = await getDocs(colRef);
+                return querySnapshot.size;
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
+            }
+        }),
 })
 
 export default postRouter;
