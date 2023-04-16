@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import postRouter from "./post";
+import userRouter from "./user";
 
 export const appRouter = router({
     hello: procedure.
@@ -117,7 +118,8 @@ export const appRouter = router({
             });
         }
     }),
-    post: postRouter
+    post: postRouter,
+    user: userRouter
 })
 
 export type AppRouter = typeof appRouter;
