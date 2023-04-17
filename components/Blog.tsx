@@ -42,8 +42,6 @@ export default function Blog(props: Props) {
                     </div>
                     {currentUser && currentUser?.uid === user && <Button.Group style={{ marginRight: "auto" }}>
                         <Button variant="default" component="a" href={`/${user}/${post}/edit`}>Edit</Button>
-                        <Button variant="default">Manage</Button>
-                        <Button variant="default">States</Button>
                     </Button.Group>}
                 </div>
                 <Title order={1} style={{ marginBottom: "0.5em", wordBreak: "break-word", marginTop: "0.5em" }}>
