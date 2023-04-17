@@ -226,6 +226,9 @@ const postRouter = router({
                 author_name:input.author_name,
                 author_image:input.author_image,
             });
+            await updateDoc(docRef, {
+                comments: increment(1),
+            });
 
             return "Comment added successfully";
         } catch (error) {
@@ -273,9 +276,9 @@ const postRouter = router({
     })).
         query(async ({ input }) => {
             try {
-                const colRef = collection(db, "users", input.userId, "blogs", input.postId, "comments");
-                const querySnapshot = await getDocs(colRef);
-                return querySnapshot.size;
+                const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+                const docSnap = await getDoc(docRef);
+                return docSnap.data()?.comments;
             } catch (error) {
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
