@@ -1,5 +1,5 @@
 import { FileInput, Paper, Text, TextInput, Title, Checkbox, Textarea, ColorInput, Button, Alert } from "@mantine/core";
-import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form";
 import styles from "../styles/profile.module.scss";
 import { trpc } from "@/utils/trpc";
 import { auth } from "@/firebase";
@@ -23,8 +23,9 @@ interface Form {
 export default function Profile() {
 
     const user = auth.currentUser;
+    const utils = trpc.useContext();
 
-    const { register, handleSubmit, control, formState: { errors, isLoading, isSubmitting }, watch, setValue ,setError} = useForm<Form>({
+    const { register, handleSubmit, control, formState: { errors, isLoading, isSubmitting }, watch, setValue, setError } = useForm<Form>({
         defaultValues: {
             name: "",
             email: "",
@@ -41,9 +42,11 @@ export default function Profile() {
 
     const { data } = trpc.user.getUserInfo.useQuery({
         userUid: user?.uid!,
+    }, {
+        enabled: user !== null,
     });
 
-    const { mutate } = trpc.user.uploadUserInfo.useMutation();
+    const { mutate, isLoading: isMutationLoading } = trpc.user.uploadUserInfo.useMutation();
 
     const onsubmit: SubmitHandler<Form> = (data) => {
         mutate({
@@ -58,6 +61,7 @@ export default function Profile() {
             brandingColor: data.brandingColor,
             userUid: user?.uid!,
         });
+        utils.user.getUserInfo.invalidate();
     };
 
     const onError: SubmitErrorHandler<Form> = (errors: any) => {
@@ -92,23 +96,35 @@ export default function Profile() {
                     </Paper>
                     <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Basic</Title>
-                        <TextInput maxLength={100} label="Website url" placeholder="Your website url" {...register("websiteUrl")} />
-                        <TextInput maxLength={100} label="Location" placeholder="Your location" {...register("location")} />
-                        <Textarea label="Bio" placeholder="Your bio" {...register("bio")} />
+                        <Controller name="websiteUrl" control={control} render={({ field }) => (
+                            <TextInput maxLength={100} label="Website url" placeholder="Your website url" {...field} />
+                        )} />
+                        <Controller name="location" control={control} render={({ field }) => (
+                            <TextInput maxLength={100} label="Location" placeholder="Your location" {...field} />
+                        )} />
+                        <Controller name="bio" control={control} render={({ field }) => (
+                            <Textarea maxLength={100} label="Bio" placeholder="Your bio" {...field} />
+                        )} />
                     </Paper>
                     <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Work</Title>
-                        <TextInput maxLength={100} label="Work" placeholder="Where did you go to school ?" {...register("work")} />
-                        <TextInput maxLength={100} label="Education" placeholder="What do you do ?" {...register("education")} />
+                        <Controller name="work" control={control} render={({ field }) => (
+                            <TextInput maxLength={100} label="Work" placeholder="Where did you go to school ?" {...field} />
+                        )} />
+                        <Controller name="education" control={control} render={({ field }) => (
+                            <TextInput maxLength={100} label="Education" placeholder="What do you do ?" {...field} />
+                        )} />
                     </Paper>
                     <Paper mb="lg" shadow="md" p="md" withBorder className={styles.paperClass}>
                         <Title order={2}>Branding</Title>
                         <Text weight="bold">Branding color</Text>
                         <Text>Used for backgrounds, borders etc.</Text>
-                        <ColorInput label="Branding color" placeholder="Your brandingColor" />
+                        <Controller name="brandingColor" control={control} render={({ field }) => (
+                            <ColorInput label="Branding color" placeholder="Your brandingColor" {...field} />
+                        )} />
                     </Paper>
                     <Paper p="md" withBorder>
-                        <Button loading={isSubmitting} disabled={isLoading} type="submit" variant="filled" color="violet" fullWidth>
+                        <Button loading={isMutationLoading} type="submit" variant="filled" color="violet" fullWidth>
                             Save Information
                         </Button>
                     </Paper>
