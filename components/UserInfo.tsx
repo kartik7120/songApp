@@ -18,7 +18,8 @@ export default function UserInfo() {
                         <Avatar style={{ marginRight: "1em" }} radius="xl" src={null} size="lg" />
                         <Text style={{ marginTop: "0.8em" }} size="xl">Kartik Shukla</Text>
                     </div>
-                    <Button variant="filled" size="md" color="violet" fullWidth>Follow</Button>
+                    <Button variant="filled" size="md
+                    " color="violet" fullWidth>Follow</Button>
                     <div>
                         {data && data.bio &&
                             <>  <Text>Bio</Text>
