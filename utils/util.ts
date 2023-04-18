@@ -48,11 +48,11 @@ export function uploadBlog(uid: string, data: any, image: File | null) {
                 createdAt: Timestamp.fromDate(new Date()),
                 author: data.author,
             });
-            await updateDoc(doc(db, "users", uid), {
-                profile_image_url: data.profile_image_url,
-                uid: uid,
-                name: data.author,
-            });
+            // await updateDoc(doc(db, "users", uid), {
+            //     profile_image_url: data.profile_image_url,
+            //     uid: uid,
+            //     name: data.author,
+            // });
             resolve(docRef as DocumentReference<DocumentData>);
         } catch (error) {
             reject(error);
@@ -82,8 +82,6 @@ export function uploadDraft(uid: string, data: any, image: File | null) {
 export function uploadBlogChanges(uid: string, data: any, image: File | null | string, postId: string) {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log(`post id = ${postId}`);
-            console.log(`blog data = ${JSON.stringify(data)}`);
             let imageUrl = "";
             if (typeof image === "string") {
                 imageUrl = image;
