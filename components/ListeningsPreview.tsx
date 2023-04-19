@@ -1,4 +1,5 @@
 import { Avatar, Badge, Paper, Text } from "@mantine/core";
+import styles from "../styles/listings.module.scss";
 
 interface Props {
     title: string;
@@ -9,24 +10,30 @@ interface Props {
     avatar: string;
 }
 
-export default function ListeningsPreview() {
+export default function ListeningsPreview(props: Props) {
     return (
         <Paper shadow="sm" p="md" withBorder>
-            <Text size="xl" weight={500}>
-                Listening Title
-            </Text>
-            <Text size="sm">
-                Date
-            </Text>
-            <Badge color="blue" variant="outline" mt="sm">
-                Category
-            </Badge>
-            <Text>
-                Content of listenings
-            </Text>
-            <div>
-                <Avatar src="https://avatars.githubusercontent.com/u/18677354?v=4" />
-                <Text>Author name</Text>
+            <div className={styles.previewContainer}>
+                <Text size="xl" weight={500}>
+                    {props.title}
+                </Text>
+                <Text size="sm">
+                    {props.date.toString()}
+                </Text>
+                <div className={styles.badgeContainer}>
+                    {props.tags.map((tag, index) => (
+                        <Badge color="blue" variant="outline" mt="sm" key={index}>
+                            {tag}
+                        </Badge>
+                    ))}
+                </div>
+                <Text>
+                    {props.description}
+                </Text>
+                <div className={styles.avatarClass}>
+                    <Avatar src={props.avatar || "https://avatars.githubusercontent.com/u/18677354?v=4"} />
+                    <Text>{props.username}</Text>
+                </div>
             </div>
         </Paper>
     );
