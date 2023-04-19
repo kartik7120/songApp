@@ -1,5 +1,14 @@
 import { Avatar, Badge, Paper, Text } from "@mantine/core";
 
+interface Props {
+    title: string;
+    date: string;
+    description: string;
+    tags: string[];
+    username: string;
+    avatar: string;
+}
+
 export default function ListeningsPreview() {
     return (
         <Paper shadow="sm" p="md" withBorder>
