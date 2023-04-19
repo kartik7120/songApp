@@ -11,3 +11,28 @@
   margin-top: 3em;
   margin-bottom: 4em;
 }
+
+.formClass {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatarClass {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.badgeContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
