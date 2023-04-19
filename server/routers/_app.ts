@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import postRouter from "./post";
 import userRouter from "./user";
+import listeningsRouter from "./listenings";
 
 export const appRouter = router({
     hello: procedure.
@@ -119,7 +120,8 @@ export const appRouter = router({
         }
     }),
     post: postRouter,
-    user: userRouter
+    user: userRouter,
+    list: listeningsRouter
 })
 
 export type AppRouter = typeof appRouter;
