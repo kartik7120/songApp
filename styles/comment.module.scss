@@ -5,3 +5,12 @@
   justify-content: flex-start;
   gap: 20px;
 }
+
+.commentWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 20px;
+  margin-left: 4em;
+  margin-right: 4em;
+}

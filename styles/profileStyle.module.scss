@@ -20,10 +20,34 @@
   justify-content: center;
   gap: 12px;
   align-items: center;
+  position: relative;
 }
 
 .paperClass {
   padding-left: 8em;
   padding-right: 8em;
   padding-top: 3em;
+}
+
+.avatarClass {
+  display: block;
+  border-radius: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.halfCircle {
+  width: 200px;
+  height: 100px;
+  position: absolute;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  border-bottom: 1px solid #3f4146;
+  border-left: 1px solid #3f4146;
+  border-right: 1px solid #3f4146;
+  border-bottom-left-radius: 100px;
+  border-bottom-right-radius: 100px;
+  background: #1a1b1e;
 }
