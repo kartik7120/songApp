@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, procedure } from "../trpc";
-import { addDoc, collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, startAt, limit, Timestamp } from "firebase/firestore";
 import { db } from "@/firebase";
 
 const listeningsRouter = router({
@@ -19,23 +19,39 @@ const listeningsRouter = router({
             description,
             tags,
             userId,
-            date: new Date(),
+            date: Timestamp.fromDate(new Date()),
             username,
             avatar
         });
 
         return docRef.id;
     }),
-    getAllListenings: procedure.query(async ({ input }) => {
+    getAllListenings: procedure.input(z.object({
+        cursor: z.string().nullish(),
+        limit: z.number(),
+    })).query(async ({ input }) => {
+        const { cursor, limit } = input;
         const colRef = collection(db, "listenings");
+        const q = query(colRef, orderBy("date", "desc"));
         const docs = await getDocs(colRef);
-
         const listenings: any[] = [];
         docs.forEach((doc) => {
-            listenings.push(doc.data());
+            listenings.push({ ...doc.data(), id: doc.id, date: doc.data().date.toDate().toDateString() });
         });
-
         return listenings;
+    }),
+    getPreviewListenings: procedure.input(z.object({
+        limit: z.number(),
+    })).query(async ({ input }) => {
+        const { limit } = input;
+        const colRef = collection(db, "listenings");
+        const q = query(colRef, orderBy("date", "desc"));
+        const docs = await getDocs(q);
+        const listenings: any[] = [];
+        docs.forEach((doc) => {
+            listenings.push({ ...doc.data(), id: doc.id, date: doc.data().date.toDate().toDateString() });
+        });
+        return listenings.slice(0, limit);
     }),
 });
 
