@@ -28,7 +28,20 @@ export default function Listenings() {
 
     const { mutate } = trpc.list.uploadListening.useMutation();
     const utils = trpc.useContext();
-    const { data } = trpc.list.getAllListenings.useQuery();
+    const { data } = trpc.list.getAllListenings.useInfiniteQuery({
+        limit: 10,
+    }, {
+        getNextPageParam: (lastPage) => {
+            if (lastPage.length < 10) return undefined;
+            return lastPage[lastPage.length - 1].createdAt;
+        },
+        onSuccess(data) {
+            console.log(data);
+        },
+        onError(error) {
+            console.error(error);
+        },
+    });
 
     const onSubmit: SubmitHandler<Form> = (data: Form) => {
         mutate({
@@ -86,9 +99,11 @@ export default function Listenings() {
                         Create new listing
                     </Button>
                 </div>
-                <div className={styles.listeningsContainer}>
-                    {data?.map((item) => (
-                        <ListeningsPreview key={item.id}  {...item} />
+                <div className={styles.listContainer}>
+                    {data?.pages.map((item) => (
+                        item.map((item) => (
+                            <ListeningsPreview key={item.id} id={item.id} {...item} />
+                        ))
                     ))}
                 </div>
             </div>

@@ -8,12 +8,13 @@ interface Props {
     tags: string[];
     username: string;
     avatar: string;
+    id: string;
 }
 
 export default function ListeningsPreview(props: Props) {
     return (
         <Paper shadow="sm" p="md" withBorder>
-            <div className={styles.previewContainer}>
+            <div className={styles.previewContainer} id={props.id}>
                 <Text size="xl" weight={500}>
                     {props.title}
                 </Text>
