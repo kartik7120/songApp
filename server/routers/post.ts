@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, procedure } from "../trpc";
-import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, startAfter, updateDoc, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { TRPCError, inferRouterOutputs } from "@trpc/server";
 import { appRouter } from "./_app";
@@ -149,12 +149,12 @@ const postRouter = router({
             const docRef = doc(db, "users", input.userId, "blogs", input.postId);
             const docSnap = await getDoc(docRef);
 
-            if(docSnap.exists() === false) return false;
+            if (docSnap.exists() === false) return false;
             const data = docSnap.data();
 
-            if(data?.reactions === undefined) return false;
-            for(let i = 0; i < data.reactions.length; i++) {
-                if(data.reactions[i] === input.reactantId) {
+            if (data?.reactions === undefined) return false;
+            for (let i = 0; i < data.reactions.length; i++) {
+                if (data.reactions[i] === input.reactantId) {
                     return true;
                 }
             }
@@ -213,8 +213,8 @@ const postRouter = router({
         userId: z.string(),
         postId: z.string(),
         comment: z.string(),
-        author_name:z.string(),
-        author_image:z.string(),
+        author_name: z.string(),
+        author_image: z.string(),
     })).mutation(async ({ input }) => {
         try {
             const docRef = doc(db, "users", input.userId, "blogs", input.postId);
@@ -223,8 +223,8 @@ const postRouter = router({
                 comment: input.comment,
                 userId: input.userId,
                 createdAt: new Date().getDate(),
-                author_name:input.author_name,
-                author_image:input.author_image,
+                author_name: input.author_name,
+                author_image: input.author_image,
             });
             await updateDoc(docRef, {
                 comments: increment(1),
@@ -286,6 +286,64 @@ const postRouter = router({
                 });
             }
         }),
+    fetchHomePageBlogs: procedure.input(z.object({
+        cursor: z.string().optional(),
+        limit: z.number(),
+    })).
+        query(async ({ input }) => {
+            try {
+                const colRef = collection(db, "blogs");
+                let querySnapshot;
+                if (input.cursor === undefined) {
+                    querySnapshot = await getDocs(colRef);
+                } else {
+                    querySnapshot = await getDocs(query(colRef, orderBy("createdAt", "desc"), limit(input.limit)));
+                }
+                const data = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })) as any[];
+
+                const blogs = await Promise.all(data.map(async (blog) => {
+                    const docRef = doc(db, "users", blog.userId, "blogs", blog.blogId);
+                    const docSnap = await getDoc(docRef);
+                    const data = docSnap.data();
+                    if (data === undefined) return;
+                    return {
+                        title: data.title,
+                        author_name: data.author_name,
+                        createdAt: data.createdAt,
+                        blogId: blog.blogId,
+                        userId: blog.userId,
+                        reactions: data.reactions,
+                        tags: data.tags,
+                    };
+                }));
+
+                if (blogs === undefined) return { blogs: [], nextCursor: undefined };
+                else
+                    return { blogs, nextCursor: querySnapshot.docs[querySnapshot.docs.length - 1].id };
+
+            } catch (error) {
+                console.log(`error while fetching blogs ${error}`);
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Internal Server Error',
+                });
+            }
+        }),
+    deleteBlog: procedure.input(z.object({
+        userId: z.string(),
+        postId: z.string(),
+    })).mutation(async ({ input }) => {
+        try {
+            const docRef = doc(db, "users", input.userId, "blogs", input.postId);
+            await deleteDoc(docRef);
+            return "Blog deleted successfully";
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal Server Error',
+            });
+        }
+    }),
 })
 
 export default postRouter;
