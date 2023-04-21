@@ -47,12 +47,13 @@ export function uploadBlog(uid: string, data: any, image: File | null) {
                 blogImage: imageUrl === "Image us null" ? null : imageUrl,
                 createdAt: Timestamp.fromDate(new Date()),
                 author: data.author,
+                author_uid: uid,
             });
-            // await updateDoc(doc(db, "users", uid), {
-            //     profile_image_url: data.profile_image_url,
-            //     uid: uid,
-            //     name: data.author,
-            // });
+            await addDoc(collection(db, "blogs"), {
+                userId: uid,
+                blogId: docRef.id,
+                createdAt: Timestamp.fromDate(new Date()),
+            })
             resolve(docRef as DocumentReference<DocumentData>);
         } catch (error) {
             reject(error);
