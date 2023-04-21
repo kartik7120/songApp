@@ -336,6 +336,11 @@ const postRouter = router({
         try {
             const docRef = doc(db, "users", input.userId, "blogs", input.postId);
             await deleteDoc(docRef);
+            const q = query(collection(db, "blogs"), where("blogId", "==", input.postId), where("userId", "==", input.userId));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach(async (doc) => {
+                await deleteDoc(doc.ref);
+            });
             return "Blog deleted successfully";
         } catch (error) {
             throw new TRPCError({
