@@ -1,4 +1,4 @@
-import { Avatar, Badge, Button, Paper, Text } from "@mantine/core";
+import { Avatar, Badge, Button, Paper, Text, Title } from "@mantine/core";
 import { FaRegComment } from "react-icons/fa";
 import styles from "../styles/PreviewBlog.module.scss";
 import { auth } from "@/firebase";
@@ -25,7 +25,13 @@ export default function PreviewBlog({ blog }: Props) {
                 <Text size="xl">{user && user?.displayName}</Text>
             </div>
             <div className={styles.container2}>
-                <Text component="a" href={`/${user!.uid}/${blog.id}`} mt={10} weight="bold" size='xl'>{blog.title}</Text>
+                <Link href={`/${user!.uid}/${blog.id}`} style={{
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color:"white"
+                }}>
+                    <Title order={2} size="h1" mt={10} weight="bold" >{blog.title}</Title>
+                </Link>
                 <div className={styles.badgeContainer}>
                     {blog.tags.map((tag, index) => (
                         <Badge color="red" size="lg" key={index}>{tag}</Badge>
