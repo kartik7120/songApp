@@ -20,7 +20,7 @@ export const appRouter = router({
     })).output(z.object({
         title: z.string(),
         body: z.string(),
-        createdAt: z.string().optional(),
+        createdAt: z.unknown().optional(),
         blogImage: z.string().optional(),
         id: z.string().optional(),
         tags: z.array(z.string()).optional(),
