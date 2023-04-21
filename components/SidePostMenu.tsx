@@ -25,7 +25,8 @@ interface Props {
 
 export default function SidePostMenu(props: Props) {
 
-    const queryClient = useQueryClient();
+    const utils = trpc.useContext();
+
     const { data, error, isError, mutate } = trpc.post.addReactionToPost.useMutation({
         onSuccess(data, variables, context) {
             console.log("success");
@@ -99,6 +100,8 @@ export default function SidePostMenu(props: Props) {
                                         reactUserId: user!.uid
                                     })
                                 }
+                                utils.getBlogPost.invalidate();
+                                utils.post.checkReaction.invalidate();
                             }}>
                                 <RiHeartAddLine color={isReacted ? "red" : ""} size={30} className={clsx(styles.iconClass, styles.heartClass)} />
                                 <Text component="span" >{props.reactionCount || 0}</Text>
@@ -130,6 +133,8 @@ export default function SidePostMenu(props: Props) {
                                             userId: props.userId
                                         })
                                     }
+                                    utils.getBlogPost.invalidate();
+                                    utils.post.checkSavePost.invalidate();
                                 }}>
                                 <BsBookmark color={isSaved ? "violet" : ""} size={30}
                                     id="save" className={clsx(styles.iconClass, styles.bookmarkClass)} />
