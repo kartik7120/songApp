@@ -55,7 +55,10 @@ export default function Blog(props: Props) {
                     <div className={styles.userInfo}>
                         <Avatar src={null} size="md" radius="lg" />
                         <div className={styles.userInfo2}>
-                            <Link href="/[user]" as="/@mantine/first-post">
+                            <Link href={`/${props.userId}/profile`} style={{
+                                textDecoration: "none",
+
+                            }}>
                                 Username
                             </Link>
                             <Text>
