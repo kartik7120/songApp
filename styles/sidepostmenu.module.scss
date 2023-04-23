@@ -36,3 +36,12 @@
     }
   }
 }
+
+@media screen and (max-width: 768px) {
+  .container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 100%;
+  }
+}

@@ -26,3 +26,25 @@
   padding-right: 3em;
   padding-top: 2em;
 }
+
+@media screen and (max-width: 768px) {
+  .blog {
+    grid-column: 1/-1;
+  }
+}
+
+.bodyClass {
+  padding: 32px 64px;
+}
+
+@media screen and (max-width: 425px) {
+  .userInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .bodyClass {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

@@ -11,15 +11,14 @@ export default function UserInfo() {
     });
 
     return (
-        <div>
+        <div className={styles.wrapper}>
             <Paper withBorder radius="md" p="md" style={{ gridColumn: "3/-1", maxHeight: "min-content" }}>
                 <div className={styles.container}>
                     <div className={styles.avatarDiv}>
                         <Avatar style={{ marginRight: "1em" }} radius="xl" src={null} size="lg" />
-                        <Text style={{ marginTop: "0.8em" }} size="xl">Kartik Shukla</Text>
+                        {data && data.username && <Text style={{ marginTop: "0.8em" }} size="xl">{data && data.username}</Text>}
                     </div>
-                    <Button variant="filled" size="md
-                    " color="violet" fullWidth>Follow</Button>
+                    <Button variant="filled" size="lg" color="violet" fullWidth>Follow</Button>
                     <div>
                         {data && data.bio &&
                             <>  <Text>Bio</Text>

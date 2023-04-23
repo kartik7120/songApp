@@ -108,9 +108,6 @@ export default function Navbar() {
                                 {user.displayName}
                             </Menu.Item>
                             <Menu.Divider />
-                            <Menu.Item>
-                                Dashboard
-                            </Menu.Item>
                             <Link href="/new" style={{ textDecoration: "none" }}>
                                 <Menu.Item>
                                     Create Post

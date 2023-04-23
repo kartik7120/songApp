@@ -14,3 +14,15 @@
   margin-left: 4em;
   margin-right: 4em;
 }
+
+@media screen and (max-width: 425px) {
+  .container {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .commentWrapper {
+    flex-direction: row;
+    margin-left: 1px;
+    margin-right: 1px;
+  }
+}

@@ -45,19 +45,21 @@ export default function Blog(props: Props) {
                     </Group>
                 </Stack>
             </Modal>
-            <Paper withBorder style={{ maxWidth: 1000 }} radius="md">
+            <Paper withBorder radius="md" className={styles.blog}>
                 <div>
                     <Image withPlaceholder
                         src={props.blogImage || null}
-                        width={1000} height={420} alt="Mantine" />
+                        alt="Mantine" style={{
+                            width: "100%",
+                            objectFit: "cover"
+                        }} />
                 </div>
                 <div className={styles.container}>
                     <div className={styles.userInfo}>
-                        <Avatar src={null} size="md" radius="lg" />
                         <div className={styles.userInfo2}>
+                            <Avatar src={null} size="md" radius="lg" />
                             <Link href={`/${props.userId}/profile`} style={{
                                 textDecoration: "none",
-
                             }}>
                                 Username
                             </Link>
@@ -86,7 +88,7 @@ export default function Blog(props: Props) {
                     </div>
                 </div>
                 <div className={styles.container2}>
-                    <Text style={{ padding: "32px 64px" }}>
+                    <Text className={styles.bodyClass}>
                         {parse(props.body)}
                     </Text>
                     <Divider my="md" />

@@ -10,9 +10,6 @@ import styles from "../styles/sidepostmenu.module.scss";
 import { trpc } from "@/utils/trpc";
 import { auth, db } from "@/firebase";
 import { Modal } from '@mantine/core';
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { doc } from "firebase/firestore";
 
 interface Props {
     isDraft?: boolean;
